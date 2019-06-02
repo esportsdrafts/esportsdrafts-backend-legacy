@@ -1,8 +1,8 @@
 
 # General project settings
 PROJECT_NAME 		:= efantasy
-DOCKER_BASE_IMAGE 	?= $(PROJECT_NAME)-base
-DOCKER_IMAGE 		?= $(PROJECT_NAME)
+DOCKER_BASE_IMAGE 	:= $(PROJECT_NAME)-base
+SERVICES 			 = $(shell find ./services -name Dockerfile -print0 | xargs -0 -n1 dirname | xargs -0 -n1 basename | sort --unique)
 
 # Versioning
 VERSION_LONG 		 = $(shell git describe --first-parent --abbrev=10 --long --tags)
@@ -14,7 +14,18 @@ GIT_HASH  			 = $(shell git rev-parse --verify HEAD)
 BOLD 			:= $(shell tput bold)
 RESET 			:= $(shell tput sgr0)
 
-.PHONY: version help
+.PHONY: services $(SERVICES) docker-base version help
+
+services: $(SERVICES)  ## Build Docker image for all services
+$(SERVICES):
+	@echo "$(BOLD)Building docker image for service '$@'...$(RESET)"
+	docker build -f ./services/$@/Dockerfile -t $(PROJECT_NAME)-$@:latest ./services/$@
+	docker tag $(PROJECT_NAME)-$@:latest $(PROJECT_NAME)-$@:$(VERSION_LONG)
+
+docker-base:  ## Build the base image for all services
+	@echo "$(BOLD)** Building base image version ${VERSION_LONG}...$(RESET)"
+	docker build -f ./Dockerfile -t $(DOCKER_BASE_IMAGE):latest .
+	docker tag $(DOCKER_BASE_IMAGE):latest $(DOCKER_BASE_IMAGE):$(VERSION_LONG)
 
 version:  ## Print the current version
 	@echo $(VERSION_LONG)
