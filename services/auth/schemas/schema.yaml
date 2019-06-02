@@ -1,0 +1,126 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: eFantasy Auth
+consumes:
+  - application/json
+produces:
+  - application/json
+  - application/problem+json
+servers:
+  - url: https://{environment}.efantasy.app/v1
+    variables:
+      environment:
+        default: api    # Production server
+        enum:
+          - api         # Production server
+          - api.dev     # Development server
+          - api.local   # Local development server
+          - api.staging # Staging server
+paths:
+  /signup:
+    post:
+      summary: Create a new account
+      operationId: createAccount
+      tags:
+        - auth
+      requestBody:
+        description: Account details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Account'
+            example:
+              username: gamerdude
+              email: gamerdude@emailserver.com
+      responses:
+        '201':
+          description: Account successfully created
+          content:
+            application/json:
+              schema:
+                description: Returned user id
+                required:
+                  - userUUID
+                properties:
+                  userUUID:
+                    description: Unique user ID
+                    type: string
+                    example: 2531329f-fb09-4ef7-887e-84e648214436
+        default:
+          description: Unknown error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /auth:
+    post:
+      summary: Authenticate a user using username/email + password
+      operationId: authUser
+      tags:
+        - auth
+      requestBody:
+        description: Login details
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+            example:
+              username: gamerdude
+              email: strongpassword
+      responses:
+        '200':
+          description: JWT authentication token
+          content:
+            application/json:
+              schema:
+                description: Returned JWT token
+                required:
+                  - token
+                properties:
+                  token:
+                    description: JWT token
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZXhwIjoxNTQ3OTc0MDgyfQ.2Ye5_w1z3zpD4dSGdRp3s98ZipCNQqmsHRB9vioOx54
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    Account:
+      required:
+        - email
+        - username
+        - password
+      properties:
+        email:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+    Login:
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    Error:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

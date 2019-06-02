@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+namespace: ingress-nginx
+metadata:
+  name: ingress-nginx
+spec:
+  rules:
+  - host: api.efantasy.dev
+    http:
+      paths:
+      - path: /v1/auth
+        backend:
+          serviceName: auth
+          servicePort: 80
+      - path: /v1/games
+        backend:
+          serviceName: games
+          servicePort: 80
+      - path: /v1/users
+        backend:
+          serviceName: users
+          servicePort: 80
