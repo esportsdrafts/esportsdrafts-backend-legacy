@@ -1,0 +1,18 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: auth-deployment
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - image: "efantasy-auth:latest"
+          imagePullPolicy: Always
+          name: auth
+          ports:
+            - containerPort: 8000

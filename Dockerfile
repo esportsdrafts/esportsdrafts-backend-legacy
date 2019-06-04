@@ -1,16 +1,10 @@
 
-FROM golang:1.12-alpine3.9 AS BUILD
+FROM golang:1.12-alpine3.9
 
-ONBUILD RUN go build -v -o /run_service ./workspace/...
+ENV GO111MODULE=on
 
-FROM alpine:3.9
+RUN apk --no-cache add git
 
 ENV WORKSPACE /workspace
 RUN mkdir /workspace
 WORKDIR /workspace
-
-ONBUILD COPY --from=BUILD /run_service /workspace
-
-RUN apk --no-cache add tini ca-certificates
-
-ENTRYPOINT [ "/sbin/tini", "--" ]

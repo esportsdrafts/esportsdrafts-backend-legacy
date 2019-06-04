@@ -1,9 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
-namespace: ingress-nginx
 metadata:
   name: ingress-nginx
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
+  tls:
+    - hosts:
+      - api.efantasy.dev
+      secretName: tls-certificate
   rules:
   - host: api.efantasy.dev
     http:
@@ -11,12 +19,12 @@ spec:
       - path: /v1/auth
         backend:
           serviceName: auth
-          servicePort: 80
+          servicePort: 8000
       - path: /v1/games
         backend:
           serviceName: games
-          servicePort: 80
+          servicePort: 8000
       - path: /v1/users
         backend:
           serviceName: users
-          servicePort: 80
+          servicePort: 8000

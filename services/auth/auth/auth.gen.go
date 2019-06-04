@@ -31,20 +31,10 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// JWT defines component schema for JWT.
-type JWT struct {
-	Token string `json:"token"`
-}
-
 // Login defines component schema for Login.
 type Login struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
-}
-
-// UUID defines component schema for UUID.
-type UUID struct {
-	Id string `json:"id"`
 }
 
 // Client which conforms to the OpenAPI3 specification for this service.
@@ -61,37 +51,9 @@ type Client struct {
 	RequestEditor func(req *http.Request, ctx context.Context) error
 }
 
-// The interface specification for the client above.
-type ClientInterface interface {
-	// AuthUser request with JSON body
-	AuthUser(ctx context.Context, body Login) (*http.Response, error)
-
-	// RefreshToken request with JSON body
-	RefreshToken(ctx context.Context, body JWT) (*http.Response, error)
-
-	// CreateAccount request with JSON body
-	CreateAccount(ctx context.Context, body Account) (*http.Response, error)
-}
-
 // AuthUser request with JSON body
 func (c *Client) AuthUser(ctx context.Context, body Login) (*http.Response, error) {
 	req, err := NewAuthUserRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if c.RequestEditor != nil {
-		err = c.RequestEditor(req, ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return c.Client.Do(req)
-}
-
-// RefreshToken request with JSON body
-func (c *Client) RefreshToken(ctx context.Context, body JWT) (*http.Response, error) {
-	req, err := NewRefreshTokenRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -149,34 +111,6 @@ func NewAuthUserRequestWithBody(server string, contentType string, body io.Reade
 	return req, nil
 }
 
-// NewRefreshTokenRequest generates requests for RefreshToken with JSON body
-func NewRefreshTokenRequest(server string, body JWT) (*http.Request, error) {
-	var bodyReader io.Reader
-
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-
-	return NewRefreshTokenRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewRefreshTokenRequestWithBody generates requests for RefreshToken with non-JSON body
-func NewRefreshTokenRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	queryUrl := fmt.Sprintf("%s/refresh", server)
-
-	req, err := http.NewRequest("POST", queryUrl, body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-	return req, nil
-}
-
 // NewCreateAccountRequest generates requests for CreateAccount with JSON body
 func NewCreateAccountRequest(server string, body Account) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -207,10 +141,8 @@ func NewCreateAccountRequestWithBody(server string, contentType string, body io.
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Authenticate a user using username/email + password returning a JWT for future operations (POST /auth)
+	// Authenticate a user using username/email + password (POST /auth)
 	AuthUser(ctx echo.Context) error
-	// Reresh a JWT gaining additional access to the system (POST /refresh)
-	RefreshToken(ctx echo.Context) error
 	// Create a new account (POST /signup)
 	CreateAccount(ctx echo.Context) error
 }
@@ -226,15 +158,6 @@ func (w *ServerInterfaceWrapper) AuthUser(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.AuthUser(ctx)
-	return err
-}
-
-// RefreshToken converts echo context to params.
-func (w *ServerInterfaceWrapper) RefreshToken(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.RefreshToken(ctx)
 	return err
 }
 
@@ -255,7 +178,6 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	}
 
 	router.POST("/auth", wrapper.AuthUser)
-	router.POST("/refresh", wrapper.RefreshToken)
 	router.POST("/signup", wrapper.CreateAccount)
 
 }
@@ -263,21 +185,21 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xW224bNxD9FYLtWwStZMVBvU9N7CZdobVhRXJcB0JBk7MrxstLeJG0NvTvBcmVrVay",
-	"IyNGgQJ9o5ZzOXPmDDV3mCqhlQTpLM7vsKUzECQe31KqvHThqI3SYByHeAGC8DocXKMB59g6w2WFVx2s",
-	"ibULZdjOS2/BSCJgx+Wqgw189dwAw/nnNsGGx0bk6aqDfzFGmW1cVLEYvFRGEIdzzKUbHODOOhuXDiow",
-	"AYsAa0m1B5QY88E+ZB9+Gm/nduoG5LfDJbMQ5TdVcbkd54UYfIy5yaQ42U7K2bcj8hAgfKRKWi+C42dM",
-	"tK45JY4rmX2xSuJpB3NZqhiOuzrEg/dEOmIbRLyb4Q6eg7FcSZzjfrfX7YW6lAZJNMc5HsRPAbSbRWhZ",
-	"9AqIlY1SDLhjwoLhHIfbiQWDE1iw7p1iTRKDdJDUu4UyaHhJhK5hQ86hcCWre7o26cYVEWCYZxDgphkJ",
-	"rj8aKHGOf8gehihrJyhLDY6UMbDUcO1S2fECMXCE1xZvsuyMh0i71Ura1JuDXu955bRKxNAMZ9cfKD/j",
-	"w2JyW/RPeWELOTqkx8Wb4kZfXhwPj7rQDPv04KK5Fu/d1cfiTSEvbq8ui2XBF/zqcrYovqjl6fh8cDam",
-	"vd9PqqY87x78AYd/Lvq3g1t98pp9/MBGemCPfrri+vj0/Kuwv47eHc25Olsevt6frDBTO6gafhpH2YB0",
-	"bcUolRctS+Jrtwc5+0FIj8oOEF7CUgN1wBC0Nh1svRDENDjHbx/wASIoiAZ5y2WF1vrJosLQK7TWFjLg",
-	"vJHBhqBQY6kMKr3zBtC9voM0HKnSnIUhmIa8mYHSgH1iJFqDceTpuWPxXd06qxmKZAU1t436X95PEDZK",
-	"rQKG/gtCH0EA2yq2IjzplzEe3EmNCKVgLXIKuRkg21gHYreGLa+k149LmBogDtb7xws87ffP98/xiwUz",
-	"B9OlSnz3K78GuYPO9uoZL33/xXoc/+efwGR9bFbp67pBiW72r2ptIm+kWsidQjuOeBBBEhZBVa0K/imk",
-	"sG8axTx9ZBfp/O2TNuq6BvFqvaYkDQTPO+xNEMnMOW3zLLsDOedGSQHSrbpQpvWlS7TO5v2wwBDDyXXd",
-	"7sIPtumnFwkMj/l5l8G8PdWKkro9W0eqsGVNNyiPTqvVarr6KwAA///zKCl0lQsAAA==",
+	"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",
+	"qqqm1T8BAAD//ymUKW4FCQAA",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
@@ -303,4 +225,3 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
-
