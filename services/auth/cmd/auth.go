@@ -22,14 +22,14 @@ func main() {
 
 	swagger, err := auth.GetSwagger()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading swagger spec\n: %s", err)
+		fmt.Fprintf(os.Stderr, "Error loading swagger spec: %s\n", err)
 		os.Exit(1)
 	}
 	swagger.Servers = nil
 
 	dbHandler, err := db.CreateDBHandler(*dbHostname, *dbUser, *dbPassword, "auth_db")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error connecting to DB\n: %s", err)
+		fmt.Fprintf(os.Stderr, "Error connecting to DB: %s\n", err)
 		os.Exit(1)
 	}
 	defer dbHandler.Close()
