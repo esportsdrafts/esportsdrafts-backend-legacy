@@ -3,12 +3,9 @@ FROM efantasy-base:latest as build_stage
 
 COPY ./ /workspace
 
-RUN cd auth && \
-    go get -u ./...
-RUN cd api && \
-    go install -v ./...
+RUN go install -v ./...
 
-RUN cd api/ && \
+RUN cd cmd/ && \
     CGO_ENABLED=0 go build \
     -installsuffix 'static' \
     -o /app .
@@ -24,4 +21,4 @@ EXPOSE 8000
 USER nobody
 
 ENTRYPOINT [ "/sbin/tini", "--" ]
-CMD ["/app"]
+CMD ["/app", "-port", "8000"]

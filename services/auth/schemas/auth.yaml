@@ -80,7 +80,7 @@ paths:
                 $ref: "#/components/schemas/Error"
   /refresh:
     post:
-      summary: Reresh a JWT gaining additional access to the system
+      summary: Refresh a JWT gaining additional access to the system
       operationId: refreshToken
       tags:
         - auth
