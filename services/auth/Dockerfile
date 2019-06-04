@@ -1,9 +1,11 @@
 
 FROM efantasy-base:latest as build_stage
 
-COPY ./ /workspace
+COPY go.mod go.sum /workspace/
 
 RUN go install -v ./...
+
+COPY ./ /workspace
 
 RUN cd cmd/ && \
     CGO_ENABLED=0 go build \

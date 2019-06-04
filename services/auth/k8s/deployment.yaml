@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
         - image: "efantasy-auth:latest"
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: auth
           ports:
             - containerPort: 8000

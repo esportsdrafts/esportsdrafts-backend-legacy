@@ -16,7 +16,7 @@ var (
 	ErrIncompatibleVersion = errors.New("incompatible version of argon2")
 )
 
-type params struct {
+type Params struct {
 	memory      uint32
 	iterations  uint32
 	parallelism uint8
@@ -25,8 +25,8 @@ type params struct {
 }
 
 // TODO: fetch from command line / env variables
-func getDefaultParams() *params {
-	return &params{
+func GetDefaultHashingParams() *Params {
+	return &Params{
 		memory:      64 * 1024,
 		iterations:  3,
 		parallelism: 2,
@@ -35,7 +35,7 @@ func getDefaultParams() *params {
 	}
 }
 
-func generateFromPassword(password string, p *params) (hash string, err error) {
+func GenerateFromPassword(password string, p *Params) (hash string, err error) {
 	// Generate a cryptographically secure random salt.
 	salt, err := generateRandomBytes(p.saltLength)
 	if err != nil {
@@ -64,7 +64,7 @@ func generateRandomBytes(n uint32) ([]byte, error) {
 	return b, nil
 }
 
-func comparePasswordAndHash(password, encodedHash string) (match bool, err error) {
+func ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
 	p, salt, hash, err := decodeHash(encodedHash)
@@ -78,7 +78,7 @@ func comparePasswordAndHash(password, encodedHash string) (match bool, err error
 	return subtle.ConstantTimeCompare(hash, otherHash) == 1, nil
 }
 
-func decodeHash(encodedHash string) (p *params, salt, hash []byte, err error) {
+func decodeHash(encodedHash string) (p *Params, salt, hash []byte, err error) {
 	vals := strings.Split(encodedHash, "$")
 	if len(vals) != 6 {
 		return nil, nil, nil, ErrInvalidHash
@@ -93,7 +93,7 @@ func decodeHash(encodedHash string) (p *params, salt, hash []byte, err error) {
 		return nil, nil, nil, ErrIncompatibleVersion
 	}
 
-	p = &params{}
+	p = &Params{}
 	_, err = fmt.Sscanf(vals[3], "m=%d,t=%d,p=%d", &p.memory, &p.iterations, &p.parallelism)
 	if err != nil {
 		return nil, nil, nil, err

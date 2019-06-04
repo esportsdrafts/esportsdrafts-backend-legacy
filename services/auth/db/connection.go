@@ -15,5 +15,7 @@ func CreateDBHandler(hostname string, user string, password string, dbname strin
 	if err != nil {
 		return nil, err
 	}
+	db.LogMode(true)
+	db.AutoMigrate(&Account{})
 	return db, nil
 }

@@ -1,17 +1,16 @@
-
 package db
 
 import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 type Base struct {
-	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"update_at"`
+	ID        uuid.UUID  `gorm:"type:uuid;primary_key;"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"update_at"`
 	DeletedAt *time.Time `sql:"index" json:"deleted_at"`
 }
 
@@ -23,7 +22,7 @@ func (base *Base) BeforeCreate(scope *gorm.Scope) error {
 
 type Account struct {
 	Base
-	Username string `gorm:"column:name;size:128;not null;" json:"name"`
-	Email string `gorm:"column:email;size:128;not null;" json:"email"`
-	Password string `gorm:"column:name;size:128;not null;"`
+	Username string `gorm:"column:name;varchar(100);not null;unique_index;" json:"name"`
+	Email    string `gorm:"column:email;varchar(100);not null;" json:"email"`
+	Password string `gorm:"column:password_hash;varchar(256);not null;"`
 }

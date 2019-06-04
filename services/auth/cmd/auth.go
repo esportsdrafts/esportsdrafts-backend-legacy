@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/efantasy/auth/api"
+	auth "github.com/efantasy/auth/api"
 	"github.com/efantasy/auth/internal"
 	"github.com/efantasy/auth/db"
 	"github.com/labstack/echo/v4"
@@ -36,6 +36,7 @@ func main() {
 
 	authAPI := internal.NewAuthAPI(dbHandler)
 
+	// TODO: Attach more middlewares and move to global lib for easy use
 	e := echo.New()
 	e.Use(echomiddleware.Logger())
 	e.Use(middleware.OapiRequestValidator(swagger))

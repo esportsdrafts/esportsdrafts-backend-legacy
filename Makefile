@@ -2,7 +2,7 @@
 # General project settings
 PROJECT_NAME 		:= efantasy
 DOCKER_BASE_IMAGE 	:= $(PROJECT_NAME)-base
-SERVICES 			 = $(shell find ./services -name Dockerfile -print0 | xargs -0 -n1 dirname | xargs -0 -n1 basename | sort --unique)
+SERVICES 			 = $(shell find ./services -name Dockerfile -print0 | xargs -0 -n1 dirname | xargs -n1 basename | sort --unique)
 
 # Versioning
 VERSION_LONG 		 = $(shell git describe --first-parent --abbrev=10 --long --tags)
