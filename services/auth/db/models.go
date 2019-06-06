@@ -25,5 +25,5 @@ type Account struct {
 	Username string `gorm:"varchar(100);not null;unique_index"`
 	Email    string `gorm:"varchar(100);not null;unique_index"`
 	Password string `gorm:"column:password_hash;varchar(256);not null"`
-	EmailVerifiedAt time.Time
+	EmailVerifiedAt *time.Time
 }

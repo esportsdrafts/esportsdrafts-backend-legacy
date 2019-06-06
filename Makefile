@@ -19,7 +19,7 @@ RESET 			:= $(shell tput sgr0)
 services: $(SERVICES)  ## Build Docker image for all services
 $(SERVICES):
 	@echo "$(BOLD)Building docker image for service '$@'...$(RESET)"
-	docker build -f ./services/$@/Dockerfile -t --build-arg VERSION=$(VERSION_LONG) $(PROJECT_NAME)-$@:latest ./services/$@
+	docker build -f ./services/$@/Dockerfile -t $(PROJECT_NAME)-$@:latest --build-arg VERSION=$(VERSION_LONG) ./services/$@
 	docker tag $(PROJECT_NAME)-$@:latest $(PROJECT_NAME)-$@:$(VERSION_LONG)
 
 docker-base:  ## Build the base image for all services

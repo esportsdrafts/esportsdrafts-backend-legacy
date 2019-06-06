@@ -24,8 +24,9 @@ paths:
             schema:
               $ref: '#/components/schemas/Account'
             example:
-              username: gamerGirl13
-              password: strongPassword
+              username: g4m3rG1rl13
+              email: email@hostname.com
+              password: veryStr0ngP4ssw0rd
       responses:
         '201':
           description: Account successfully created
