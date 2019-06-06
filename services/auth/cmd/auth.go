@@ -25,7 +25,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error loading swagger spec: %s\n", err)
 		os.Exit(1)
 	}
-	// swagger.Servers = nil
+	fmt.Fprintf(os.Stderr, "Servers: %+v\n", swagger.Servers)
+	swagger.Servers = nil
 
 	dbHandler, err := db.CreateDBHandler(*dbHostname, *dbUser, *dbPassword, "auth_db")
 	if err != nil {
