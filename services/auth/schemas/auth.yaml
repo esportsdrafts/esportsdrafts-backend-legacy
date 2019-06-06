@@ -8,15 +8,7 @@ produces:
   - application/json
   - application/problem+json
 servers:
-  - url: https://{environment}.efantasy.app/v1/auth
-    variables:
-      environment:
-        default: api    # Production server
-        enum:
-          - api         # Production server
-          - api.dev     # Development server
-          - api.local   # Local development server
-          - api.staging # Staging server
+  - url: https://api.efantasy.dev
 paths:
   /v1/auth/register:
     post:

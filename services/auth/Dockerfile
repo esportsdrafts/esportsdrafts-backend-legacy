@@ -16,6 +16,8 @@ FROM alpine:3.9
 
 COPY --from=build_stage /app /app
 
+ARG VERSION=unknown
+
 RUN apk --no-cache add tini ca-certificates
 
 EXPOSE 8000
