@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/jinzhu/gorm"
 	auth "github.com/efantasy/auth/api"
@@ -29,11 +30,7 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 	return err
 }
 
-func (a *AuthAPI)AuthUser(ctx echo.Context) error {
-	return nil
-}
-
-func (a *AuthAPI)RefreshToken(ctx echo.Context) error {
+func (a *AuthAPI)PerformAuth(ctx echo.Context) error {
 	return nil
 }
 
@@ -52,11 +49,14 @@ func validEmailString(email string) bool {
 func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 	var newAccount auth.Account
 	err := ctx.Bind(&newAccount)
+
+	newUsername := strings.ToLower(newAccount.Username)
+
 	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
 	}
 
-	if !validUserNameString(newAccount.Username) {
+	if !validUserNameString(newUsername) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Username has contain 5 or more characters and can only contain [a-z][A-Z][0-9]")
 	}
@@ -76,17 +76,17 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 
 	var count int
 	// Check if username is in use
-	a.dbHandler.Where(db.Account{Username: newAccount.Username}).Count(&count)
+	a.dbHandler.Where(db.Account{Username: newUsername}).Count(&count)
 	if count > 0 {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			fmt.Sprintf("Username '%s' already in use", newAccount.Username))
+			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
 
 	// Check if email is in use
 	a.dbHandler.Where(db.Account{Email: newAccount.Email}).Count(&count)
 	if count > 0 {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			fmt.Sprintf("The provided email '%s' is already registered", newAccount.Username))
+			fmt.Sprintf("The provided email '%s' is already registered", newAccount.Email))
 	}
 
 	// Grab plain-text password and hash it then save to DB
@@ -97,7 +97,7 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 	}
 
 	dbAccount := &db.Account {
-		Username: newAccount.Username,
+		Username: newUsername,
 		Email: newAccount.Email,
 		Password: hashedPassword,
 	}
@@ -107,7 +107,7 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 		return sendAuthAPIError(ctx, http.StatusInternalServerError, "Failed to create new Account")
 	}
 
-	err = ctx.JSON(http.StatusCreated, auth.UUID{Id: dbAccount.ID.String()})
+	err = ctx.JSON(http.StatusCreated, auth.JWT{})
 	if err != nil {
 		return err
 	}

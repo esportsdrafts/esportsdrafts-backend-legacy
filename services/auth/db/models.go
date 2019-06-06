@@ -22,7 +22,8 @@ func (base *Base) BeforeCreate(scope *gorm.Scope) error {
 
 type Account struct {
 	Base
-	Username string `gorm:"column:name;varchar(100);not null;unique_index;" json:"name"`
-	Email    string `gorm:"column:email;varchar(100);not null;" json:"email"`
-	Password string `gorm:"column:password_hash;varchar(256);not null;"`
+	Username string `gorm:"varchar(100);not null;unique_index"`
+	Email    string `gorm:"varchar(100);not null;unique_index"`
+	Password string `gorm:"column:password_hash;varchar(256);not null"`
+	EmailVerifiedAt time.Time
 }

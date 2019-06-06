@@ -21,6 +21,14 @@ type Account struct {
 	Username string `json:"username"`
 }
 
+// AuthClaim defines component schema for AuthClaim.
+type AuthClaim struct {
+	Claim    string  `json:"claim"`
+	Code     *string `json:"code,omitempty"`
+	Password *string `json:"password,omitempty"`
+	Username *string `json:"username,omitempty"`
+}
+
 // Error defines component schema for Error.
 type Error struct {
 	Code    int32  `json:"code"`
@@ -29,27 +37,16 @@ type Error struct {
 
 // JWT defines component schema for JWT.
 type JWT struct {
-	Token string `json:"token"`
-}
-
-// Login defines component schema for Login.
-type Login struct {
-	Password string `json:"password"`
-	Username string `json:"username"`
-}
-
-// UUID defines component schema for UUID.
-type UUID struct {
-	Id string `json:"id"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int32  `json:"expires_in"`
+	IdToken     string `json:"id_token"`
 }
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Authenticate a user using username/email + password returning a JWT for future operations (POST /auth)
-	AuthUser(ctx echo.Context) error
-	// Refresh a JWT gaining additional access to the system (POST /refresh)
-	RefreshToken(ctx echo.Context) error
-	// Create a new account (POST /signup)
+	// Authenticate a user returning a JWT for future operations and set session token for browsers (POST /v1/auth/auth)
+	PerformAuth(ctx echo.Context) error
+	// Create a new account (POST /v1/auth/register)
 	CreateAccount(ctx echo.Context) error
 }
 
@@ -58,21 +55,12 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// AuthUser converts echo context to params.
-func (w *ServerInterfaceWrapper) AuthUser(ctx echo.Context) error {
+// PerformAuth converts echo context to params.
+func (w *ServerInterfaceWrapper) PerformAuth(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.AuthUser(ctx)
-	return err
-}
-
-// RefreshToken converts echo context to params.
-func (w *ServerInterfaceWrapper) RefreshToken(ctx echo.Context) error {
-	var err error
-
-	// Invoke the callback with all the unmarshalled arguments
-	err = w.Handler.RefreshToken(ctx)
+	err = w.Handler.PerformAuth(ctx)
 	return err
 }
 
@@ -92,30 +80,27 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 		Handler: si,
 	}
 
-	router.POST("/auth", wrapper.AuthUser)
-	router.POST("/refresh", wrapper.RefreshToken)
-	router.POST("/signup", wrapper.CreateAccount)
+	router.POST("/v1/auth/auth", wrapper.PerformAuth)
+	router.POST("/v1/auth/register", wrapper.CreateAccount)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"fwMAAP//cFKbNKIIAAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
@@ -141,3 +126,4 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
+

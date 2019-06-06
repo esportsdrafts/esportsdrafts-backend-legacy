@@ -8,7 +8,7 @@ produces:
   - application/json
   - application/problem+json
 servers:
-  - url: https://{environment}.efantasy.app/v1
+  - url: https://{environment}.efantasy.app/v1/auth
     variables:
       environment:
         default: api    # Production server
@@ -18,7 +18,7 @@ servers:
           - api.local   # Local development server
           - api.staging # Staging server
 paths:
-  /signup:
+  /v1/auth/register:
     post:
       summary: Create a new account
       operationId: createAccount
@@ -32,37 +32,34 @@ paths:
             schema:
               $ref: '#/components/schemas/Account'
             example:
-              username: gamerdude
-              email: gamerdude@emailserver.com
+              username: gamerGirl13
+              password: strongPassword
       responses:
         '201':
           description: Account successfully created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UUID'
+                $ref: '#/components/schemas/JWT'
         default:
           description: Unknown error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /auth:
+  /v1/auth/auth:
     post:
-      summary: Authenticate a user using username/email + password returning a JWT for future operations
-      operationId: authUser
+      summary: Authenticate a user returning a JWT for future operations and set session token for browsers
+      operationId: performAuth
       tags:
         - auth
       requestBody:
-        description: Login details
+        description: Authentication claims and claim data
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Login'
-            example:
-              username: gamerdude
-              email: strongpassword
+              $ref: '#/components/schemas/AuthClaim'
       responses:
         '200':
           description: JWT authentication token
@@ -70,36 +67,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JWT'
-              example:
-                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZXhwIjoxNTQ3OTc0MDgyfQ.2Ye5_w1z3zpD4dSGdRp3s98ZipCNQqmsHRB9vioOx54
-        default:
-          description: unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /refresh:
-    post:
-      summary: Refresh a JWT gaining additional access to the system
-      operationId: refreshToken
-      tags:
-        - auth
-      requestBody:
-        description: Old unexpired token
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/JWT'
-      responses:
-        '200':
-          description: Refreshed JWT authentication token
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JWT'
-              example:
-                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InVzZXIxIiwiZXhwIjoxNTQ3OTc0MDgyfQ.2Ye5_w1z3zpD4dSGdRp3s98ZipCNQqmsHRB9vioOx54
         default:
           description: unexpected error
           content:
@@ -121,27 +88,31 @@ components:
           type: string
         password:
           type: string
-    Login:
+    AuthClaim:
       required:
-        - username
-        - password
+        - claim
       properties:
+        claim:
+          type: string
+          enum: [username+password, 2fa, renew]
+        code:
+          type: string
         username:
           type: string
         password:
           type: string
-    UUID:
-      required:
-        - id
-      properties:
-        id:
-          type: string
     JWT:
       required:
-        - token
+        - access_token
+        - id_token
+        - expires_in
       properties:
-        token:
+        access_token:
           type: string
+        id_token:
+          type: string
+        expires_in:
+          type: integer
     Error:
       required:
         - code
