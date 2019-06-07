@@ -20,6 +20,6 @@ func CreateDBHandler(hostname string, user string, password string, dbname strin
 	}
 	db.LogMode(true)
 	db.DropTableIfExists(Account{})
-	db.AutoMigrate(Account{})
+	db = db.AutoMigrate(Account{})
 	return db, nil
 }
