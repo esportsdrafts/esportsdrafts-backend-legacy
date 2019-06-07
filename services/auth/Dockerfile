@@ -17,6 +17,7 @@ FROM alpine:3.9
 COPY --from=build_stage /app /app
 
 ARG VERSION=unknown
+ENV VERSION=${VERSION}
 
 RUN apk --no-cache add tini ca-certificates
 
