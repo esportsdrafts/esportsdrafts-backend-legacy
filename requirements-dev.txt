@@ -1,0 +1,5 @@
+pip-tools
+pylint
+flake8
+black
+mypy
