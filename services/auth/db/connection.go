@@ -1,16 +1,32 @@
-
 package db
 
 import (
-	"os"
+	"database/sql"
 	"fmt"
+	"os"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
+func createDatabase(hostname string, user string, password string, dbname string) {
+	connParams := fmt.Sprintf("%s:%s@tcp(%s:3306)/", user, password, hostname)
+	db, err := sql.Open("mysql", connParams)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + dbname)
+	if err != nil {
+		panic(err)
+	}
+	db.Close()
+}
+
 // CreateDBHandler Creates a MySQL GORM driver
 func CreateDBHandler(hostname string, user string, password string, dbname string) (*gorm.DB, error) {
+	createDatabase(hostname, user, password, dbname)
 	connParams := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		user, password, hostname, dbname)
 	fmt.Fprintf(os.Stderr, "Conn params: %s\n", connParams)
@@ -19,7 +35,6 @@ func CreateDBHandler(hostname string, user string, password string, dbname strin
 		return nil, err
 	}
 	db.LogMode(true)
-	db.DropTableIfExists(Account{})
 	db = db.AutoMigrate(Account{})
 	return db, nil
 }

@@ -11,8 +11,7 @@ spec:
         app: auth
     spec:
       containers:
-        - image: "efantasy-auth:v0.0.0-14-g415a72894b"
-          imagePullPolicy: IfNotPresent
+        - image: efantasy-auth
           name: auth
           ports:
             - containerPort: 8000

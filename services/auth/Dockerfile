@@ -1,5 +1,9 @@
 
-FROM efantasy-base:latest as build_stage
+FROM efantasy-base:latest
+
+ENV GOFLAGS=-mod=vendor
+
+RUN apk --no-cache add git tini ca-certificates
 
 COPY go.mod go.sum /workspace/
 
@@ -12,14 +16,8 @@ RUN cd cmd/ && \
     -installsuffix 'static' \
     -o /app .
 
-FROM alpine:3.9
-
-COPY --from=build_stage /app /app
-
 ARG VERSION=unknown
 ENV VERSION=${VERSION}
-
-RUN apk --no-cache add tini ca-certificates
 
 EXPOSE 8000
 

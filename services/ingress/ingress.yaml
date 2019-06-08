@@ -20,11 +20,11 @@ spec:
         backend:
           serviceName: auth
           servicePort: 8000
-      - path: /v1/games
-        backend:
-          serviceName: games
-          servicePort: 8000
-      - path: /v1/users
-        backend:
-          serviceName: users
-          servicePort: 8000
+#     - path: /v1/games
+#       backend:
+#         serviceName: games
+#         servicePort: 8000
+#     - path: /v1/users
+#       backend:
+#         serviceName: users
+#         servicePort: 8000

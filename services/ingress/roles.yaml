@@ -19,12 +19,19 @@ rules:
     - proxy
     - use
     - redirect
+    - create
+    - update
 - apiGroups: [""]
   resources: ["events"]
   verbs:
     - redirect
     - patch
     - post
+    - create
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs:
+    - list
 - apiGroups:
     - "extensions"
   resources:
@@ -36,6 +43,7 @@ rules:
     - proxy
     - use
     - redirect
+    - update
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
