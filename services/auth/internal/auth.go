@@ -4,12 +4,17 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"unicode/utf8"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	auth "github.com/efantasy/auth/api"
 	"github.com/efantasy/auth/db"
 	"github.com/labstack/echo/v4"
+	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
+
+const defaultErrorMessage = "Failed to create new Account"
 
 type AuthAPI struct {
 	dbHandler *gorm.DB
@@ -30,19 +35,88 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 	return err
 }
 
-func (a *AuthAPI)PerformAuth(ctx echo.Context) error {
+func healthz(ctx echo.Context) error {
 	return nil
 }
 
+func RegisterHealthChecks(router runtime.EchoRouter) {
+	router.GET("/healthz", healthz)
+}
+
+func writeHeaderPayloadCookie(ctx echo.Context) {
+	cookie := new(http.Cookie)
+	cookie.Name = "username"
+	cookie.Value = "jon"
+	cookie.Expires = time.Now().Add(30 * time.Minute)
+	ctx.SetCookie(cookie)
+}
+
+func writeSignatureCookie(ctx echo.Context) {
+	cookie := new(http.Cookie)
+	cookie.Name = "username"
+	cookie.Value = "jon"
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	ctx.SetCookie(cookie)
+}
+
+func (a *AuthAPI)PerformAuth(ctx echo.Context) error {
+	var newAuthClaim auth.AuthClaim
+
+	err := ctx.Bind(&newAuthClaim)
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
+	}
+
+	switch newAuthClaim.Claim {
+	case "username+password":
+		var account db.Account
+
+		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
+		// Verify username and password
+		if err != nil {
+			return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid username or password")
+		}
+
+		match, err := ComparePasswordAndHash(*newAuthClaim.Password, account.Password)
+		if err != nil {
+			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+		}
+
+		if !match {
+			return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid username or password")
+		}
+
+		return nil
+	default:
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid authentication claim")
+	}
+}
+
 func validUserNameString(name string) bool {
+	characterCount := utf8.RuneCountInString(name)
+	if characterCount < 5 || characterCount > 30 {
+		return false
+	}
+	for _, r := range name {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') {
+			return false
+		}
+	}
 	return true
 }
 
 func validPasswordString(password string) bool {
+	if len(password) < 12 || len(password) > 127 {
+		return false
+	}
 	return true
 }
 
+// TODO: Do more validation?
 func validEmailString(email string) bool {
+	if !strings.Contains(email, "@") {
+		return false
+	}
 	return true
 }
 
@@ -58,13 +132,13 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 
 	if !validUserNameString(newUsername) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			"Username has contain 5 or more characters and can only contain [a-z][A-Z][0-9]")
+			"Username has to contain 5 or more characters and can only contain [a-z][A-Z][0-9]")
 	}
 
 	// Still in plain text at this point
 	if !validPasswordString(newAccount.Password) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			"Password has to be between 12 and 160 characters inclusive")
+			"Password has to be between 12 and 127 characters inclusive")
 	}
 
 	if !validEmailString(newAccount.Email) {
@@ -89,11 +163,11 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 			fmt.Sprintf("The provided email '%s' is already registered", newAccount.Email))
 	}
 
-	// Grab plain-text password and hash it then save to DB
+	// Grab plain-text password, salt+hash it then save to DB
 	hashingParams := GetDefaultHashingParams()
 	hashedPassword, err := GenerateFromPassword(newAccount.Password, hashingParams)
 	if err != nil {
-		return sendAuthAPIError(ctx, http.StatusInternalServerError, "Failed to create new Account")
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
 
 	dbAccount := &db.Account {
@@ -104,12 +178,13 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 
 	err = a.dbHandler.Save(&dbAccount).Error
 	if err != nil {
-		return sendAuthAPIError(ctx, http.StatusInternalServerError, "Failed to create new Account")
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
 
-	err = ctx.JSON(http.StatusCreated, auth.JWT{})
+	// Empty JSON body with success status
+	err = ctx.JSON(http.StatusCreated, map[string]int{})
 	if err != nil {
-		return err
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
 
 	return nil

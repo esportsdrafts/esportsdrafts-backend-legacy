@@ -30,10 +30,6 @@ paths:
       responses:
         '201':
           description: Account successfully created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JWT'
         default:
           description: Unknown error
           content:
