@@ -15,8 +15,8 @@ GIT_HASH  		 = $(shell git rev-parse --verify HEAD)
 BOLD 			:= $(shell tput bold)
 RESET 			:= $(shell tput sgr0)
 
-.PHONY: services $(SERVICES) docker-base watch integration-tests version clean \
-	help
+.PHONY: services $(SERVICES) docker-base frontend watch integration-tests \
+	version clean help
 
 .DEFAULT_GOAL := help
 
@@ -30,6 +30,10 @@ docker-base:  ## Build the base image for all services
 	@echo "$(BOLD)** Building base image version ${VERSION_LONG}...$(RESET)"
 	docker build -f ./Dockerfile -t $(DOCKER_BASE_IMAGE):latest .
 	docker tag $(DOCKER_BASE_IMAGE):latest $(DOCKER_BASE_IMAGE):$(VERSION_LONG)
+
+frontend:
+	@echo "$(BOLD)** Building frontend docker image...$(RESET)"
+	docker build -f ../efantasy-frontend/Dockerfile -t $(PROJECT_NAME)-frontend:latest ../efantasy-frontend
 
 watch:  ## Start up a local development environment that watches and redeploys changes automatically
 	tilt up --watch
