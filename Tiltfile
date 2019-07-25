@@ -36,12 +36,7 @@ docker_build('efantasy-mysql', 'services/mysql',
 
 # Live updates in dev mode
 docker_build('efantasy-auth', 'services/auth',
-             live_update=[
-                 sync('services/auth', '/workspace'),
-                 run("cd /workspace/cmd/ && CGO_ENABLED=0 go build -installsuffix 'static' -o /app"),
-                 restart_container(),
-             ]
-             )
+             dockerfile='services/auth/Dockerfile')
 
 docker_build('efantasy-frontend', '../efantasy-frontend',
              dockerfile='../fantasy-frontend/Dockerfile')
