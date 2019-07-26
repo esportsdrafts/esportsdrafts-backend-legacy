@@ -9,10 +9,14 @@ metadata:
     ingress.kubernetes.io/force-ssl-redirect: "true"
     ingress.kubernetes.io/enable-modsecurity: "true"
     ingress.kubernetes.io/enable-owasp-core-rules: "true"
+    ingress.kubernetes.io/enable-cors: "true"
+    ingress.kubernetes.io/cors-allow-origin: "https://efantasy.dev"
+    ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
   tls:
     - hosts:
       - api.efantasy.dev
+      - efantasy.dev
       secretName: tls-certificate
   rules:
   - host: api.efantasy.dev
@@ -30,3 +34,10 @@ spec:
 #       backend:
 #         serviceName: users
 #         servicePort: 8000
+  - host: efantasy.dev
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: frontend
+          servicePort: 8000

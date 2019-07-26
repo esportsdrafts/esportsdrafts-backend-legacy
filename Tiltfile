@@ -14,10 +14,15 @@ services_k8s_files = [
     'services/mysql/k8s/pv.yaml',
     'services/mysql/k8s/deployment.yaml',
     'services/mysql/k8s/service.yaml',
+    'services/frontend/k8s/deployment.yaml',
+    'services/frontend/k8s/service.yaml',
 ]
 
 # Kubernetes YAML config files
 k8s_yaml(services_k8s_files)
+
+docker_build('efantasy-frontend', '../efantasy-frontend/',
+             dockerfile='../efantasy-frontend/Dockerfile')
 
 # Docker images
 docker_build('efantasy-mysql', 'services/mysql',
