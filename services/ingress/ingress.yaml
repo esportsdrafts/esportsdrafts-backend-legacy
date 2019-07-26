@@ -19,21 +19,6 @@ spec:
       - efantasy.dev
       secretName: tls-certificate
   rules:
-  - host: api.efantasy.dev
-    http:
-      paths:
-      - path: /v1/auth
-        backend:
-          serviceName: auth
-          servicePort: 8000
-#     - path: /v1/games
-#       backend:
-#         serviceName: games
-#         servicePort: 8000
-#     - path: /v1/users
-#       backend:
-#         serviceName: users
-#         servicePort: 8000
   - host: efantasy.dev
     http:
       paths:
@@ -41,3 +26,11 @@ spec:
         backend:
           serviceName: frontend
           servicePort: 8000
+  - host: api.efantasy.dev
+    http:
+      paths:
+      - path: /v1/auth
+        backend:
+          serviceName: auth
+          servicePort: 8000
+
