@@ -1,5 +1,6 @@
+black
+flake8
+isort
+mypy
 pip-tools
 pylint
-flake8
-black
-mypy

@@ -94,13 +94,23 @@ func (a *AuthAPI)PerformAuth(ctx echo.Context) error {
 
 func validUserNameString(name string) bool {
 	characterCount := utf8.RuneCountInString(name)
+
+	// Check max and min length
+	// TODO: Make these limits globally configurable
 	if characterCount < 5 || characterCount > 30 {
 		return false
 	}
+
+	// Make sure only valid characters in name [a-z][0-9]
 	for _, r := range name {
 		if (r < 'a' || r > 'z') && (r < '0' || r > '9') {
 			return false
 		}
+	}
+
+	// Protect test accounts
+	if strings.HasPrefix(name, "test_user") {
+		return false
 	}
 	return true
 }

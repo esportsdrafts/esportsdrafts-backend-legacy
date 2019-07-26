@@ -33,4 +33,3 @@ spec:
         backend:
           serviceName: auth
           servicePort: 8000
-
