@@ -35,9 +35,11 @@ docker_build('efantasy-frontend', '../efantasy-frontend/',
              dockerfile='../efantasy-frontend/Dockerfile')
 
 # Docker images
+docker_build('efantasy-base', './',
+             dockerfile='Dockerfile')
+
 docker_build('efantasy-mysql', 'services/mysql',
              dockerfile='services/mysql/Dockerfile')
 
-# Live updates in dev mode
 docker_build('efantasy-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile')

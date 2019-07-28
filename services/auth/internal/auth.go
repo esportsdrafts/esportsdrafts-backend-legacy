@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const defaultErrorMessage = "Authentication error"
+const defaultErrorMessage = "Authentication server error"
 
 type AuthAPI struct {
 	dbHandler *gorm.DB
@@ -94,6 +94,9 @@ func validUserNameString(name string) bool {
 
 	// Make sure only valid characters in name [a-z][0-9]
 	for _, r := range name {
+		if r == '_' || r == '-' {
+			continue
+		}
 		if (r < 'a' || r > 'z') && (r < '0' || r > '9') {
 			return false
 		}
@@ -133,7 +136,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 
 	if !validUserNameString(newUsername) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			"Username has to contain 5 or more characters and can only contain [a-z][A-Z][0-9]")
+			"Username has to be between 5 and 30 characters inclusive and can only contain [a-z][0-9], underscores and dashes")
 	}
 
 	// Still in plain text at this point

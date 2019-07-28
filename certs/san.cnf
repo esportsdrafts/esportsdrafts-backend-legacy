@@ -1,0 +1,16 @@
+[ req ]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+prompt             = no
+[ req_distinguished_name ]
+countryName                 = US
+stateOrProvinceName         = CA
+localityName               = San Francisco
+organizationName           = eFantasy
+commonName                 = efantasy.localhost
+[ req_ext ]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1   = efantasy.localhost
+DNS.2   = api.efantasy.localhost

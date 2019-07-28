@@ -6,8 +6,6 @@ ARG VERSION=unknown
 LABEL Name "eFantasy-base"
 LABEL Version ${VERSION}
 
-# ENV GO111MODULE=on
-
 ENV WORKSPACE /workspace
 RUN mkdir /workspace
 WORKDIR /workspace

@@ -9,7 +9,7 @@ env_urls = {
     'dev': 'dev.int.efantasy.com',
     'stage': 'stage.int.efantasy.com',
     'prod': 'efantasy.com',
-    'local': 'efantasy.dev',
+    'local': 'efantasy.localhost',
 }
 
 

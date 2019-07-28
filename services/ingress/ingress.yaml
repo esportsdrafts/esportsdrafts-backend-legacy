@@ -5,28 +5,27 @@ metadata:
   namespace: default
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    kubernetes.io/tls-acme: "true"
     ingress.kubernetes.io/force-ssl-redirect: "true"
     ingress.kubernetes.io/enable-modsecurity: "true"
     ingress.kubernetes.io/enable-owasp-core-rules: "true"
     ingress.kubernetes.io/enable-cors: "true"
-    ingress.kubernetes.io/cors-allow-origin: "https://efantasy.dev"
+    ingress.kubernetes.io/cors-allow-origin: "https://efantasy.localhost"
     ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
   tls:
     - hosts:
-      - api.efantasy.dev
-      - efantasy.dev
+      - api.efantasy.localhost
+      - efantasy.localhost
       secretName: tls-certificate
   rules:
-  - host: efantasy.dev
+  - host: efantasy.localhost
     http:
       paths:
       - path: /
         backend:
           serviceName: frontend
           servicePort: 8000
-  - host: api.efantasy.dev
+  - host: api.efantasy.localhost
     http:
       paths:
       - path: /v1/auth

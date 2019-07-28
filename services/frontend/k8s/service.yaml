@@ -7,7 +7,7 @@ spec:
   ports:
      -  port: 8000
         protocol: TCP
-        targetPort: 8000
+        targetPort: 80
   selector:
     app: frontend
   type: NodePort

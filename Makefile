@@ -47,7 +47,7 @@ version:  ## Print the current version
 clean:  ## Clean up all Python cache files and Docker volumes, containers and networks
 	@echo "$(BOLD)** Cleaning up Python files...$(RESET)"
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
-	rm -rf .pytest_cache .hypothesis
+	rm -rf .pytest_cache .hypothesis .python-version .mypy_cache
 	@echo "$(BOLD)** Cleaning up Docker images and volumes...$(RESET)"
 	docker system prune -a -v
 
