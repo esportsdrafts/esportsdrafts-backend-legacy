@@ -30,6 +30,7 @@ services_k8s_files = [
 # Kubernetes YAML config files
 k8s_yaml(services_k8s_files)
 
+# Frontend is an edge-case since it lives in a seperate repo
 docker_build('efantasy-frontend', '../efantasy-frontend/',
              dockerfile='../efantasy-frontend/Dockerfile')
 
@@ -40,6 +41,3 @@ docker_build('efantasy-mysql', 'services/mysql',
 # Live updates in dev mode
 docker_build('efantasy-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile')
-
-docker_build('efantasy-frontend', '../efantasy-frontend',
-             dockerfile='../fantasy-frontend/Dockerfile')

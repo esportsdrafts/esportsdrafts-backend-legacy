@@ -31,7 +31,7 @@ docker-base:  ## Build the base image for all services
 	docker build -f ./Dockerfile -t $(DOCKER_BASE_IMAGE):latest --build-arg VERSION=$(VERSION_LONG) .
 	docker tag $(DOCKER_BASE_IMAGE):latest $(DOCKER_BASE_IMAGE):$(VERSION_LONG)
 
-frontend:
+frontend:  ## Build frontend. Requires that the repo is cloned in parent directory to this repo
 	@echo "$(BOLD)** Building frontend docker image...$(RESET)"
 	docker build -f ../efantasy-frontend/Dockerfile -t $(PROJECT_NAME)-frontend:latest ../efantasy-frontend
 
@@ -44,7 +44,7 @@ integration-tests:  ## Run all integration tests, by default against local envir
 version:  ## Print the current version
 	@echo $(VERSION_LONG)
 
-clean:
+clean:  ## Clean up all Python cache files and Docker volumes, containers and networks
 	@echo "$(BOLD)** Cleaning up Python files...$(RESET)"
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 	rm -rf .pytest_cache .hypothesis
@@ -53,3 +53,4 @@ clean:
 
 help:  ## Print this make target help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage: make \033[36m<target>\033[0m\n\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
+	@printf "\n"

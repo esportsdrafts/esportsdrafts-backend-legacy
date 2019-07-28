@@ -7,6 +7,8 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// Base fixes the default behavior in GORM to use UUID as primary key instead of
+// numbered ID:s. Grab the defaults but change the primary key to UUID.
 type Base struct {
 	ID        uuid.UUID  `gorm:"varchar(36);primary_key"`
 	CreatedAt time.Time  `json:"created_at"`
@@ -20,6 +22,8 @@ func (base *Base) BeforeCreate(scope *gorm.Scope) error {
 	return scope.SetColumn("ID", uuid.String())
 }
 
+// Account is a definition of the pure login info of a user. User details are
+// stored in the `user` service.
 type Account struct {
 	Base
 	Username string `gorm:"varchar(100);not null;unique_index" json:"username"`

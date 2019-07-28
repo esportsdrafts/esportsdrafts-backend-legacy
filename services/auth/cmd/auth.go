@@ -3,13 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 
 	auth "github.com/barreyo/efantasy/services/auth/api"
 	"github.com/barreyo/efantasy/services/auth/db"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
 
 	"github.com/barreyo/efantasy/libs/healthz"
+	efanlog "github.com/barreyo/efantasy/libs/log"
 	"github.com/barreyo/efantasy/services/auth/internal"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
@@ -22,17 +22,17 @@ func main() {
 	var dbPassword = flag.String("db_password", "password", "DB hostname")
 	flag.Parse()
 
+	log := efanlog.GetLogger()
+
 	swagger, err := auth.GetSwagger()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error loading swagger spec: %s\n", err)
-		os.Exit(1)
+		log.Fatal("Error loading swagger spec: %s", err)
 	}
 	swagger.Servers = nil
 
 	dbHandler, err := db.CreateDBHandler(*dbHostname, *dbUser, *dbPassword, "auth_db")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error connecting to DB: %s\n", err)
-		os.Exit(1)
+		log.Fatal("Error connecting to DB: %s\n", err)
 	}
 	defer dbHandler.Close()
 
@@ -40,9 +40,10 @@ func main() {
 
 	// TODO: Attach more middlewares and move to global lib for easy use
 	e := echo.New()
-	e.Use(echomiddleware.Logger())
 	e.Use(echomiddleware.RequestID())
 	e.Use(middleware.OapiRequestValidator(swagger))
+	e.Use(efanlog.EchoLoggingMiddleware())
+
 	healthz.RegisterHealthChecks(*e)
 
 	// Register routes
