@@ -6,7 +6,7 @@ SERVICES 		 = $(shell find ./services -name Dockerfile -print0 | xargs -0 -n1 di
 ENVIRONMENT 		?= local
 
 # Versioning
-VERSION_LONG 		 = $(shell git describe --first-parent --abbrev=10 --long --tags)
+VERSION_LONG 		 = $(shell git describe --first-parent --abbrev=10 --long --tags --dirty)
 VERSION_SHORT 		 = $(shell echo $(VERSION_LONG) | cut -f 1 -d "-")
 DATE_STRING 		 = $(shell date +'%m-%d-%Y')
 GIT_HASH  		 = $(shell git rev-parse --verify HEAD)
@@ -28,7 +28,7 @@ $(SERVICES):
 
 docker-base:  ## Build the base image for all services
 	@echo "$(BOLD)** Building base image version ${VERSION_LONG}...$(RESET)"
-	docker build -f ./Dockerfile -t $(DOCKER_BASE_IMAGE):latest .
+	docker build -f ./Dockerfile -t $(DOCKER_BASE_IMAGE):latest --build-arg VERSION=$(VERSION_LONG) .
 	docker tag $(DOCKER_BASE_IMAGE):latest $(DOCKER_BASE_IMAGE):$(VERSION_LONG)
 
 frontend:
@@ -49,7 +49,7 @@ clean:
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 	rm -rf .pytest_cache .hypothesis
 	@echo "$(BOLD)** Cleaning up Docker images and volumes...$(RESET)"
-	docker system prune -v
+	docker system prune -a -v
 
 help:  ## Print this make target help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage: make \033[36m<target>\033[0m\n\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)

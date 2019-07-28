@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 
+	auth "github.com/barreyo/efantasy/services/auth/api"
+	"github.com/barreyo/efantasy/services/auth/db"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
-	auth "github.com/efantasy/auth/api"
-	"github.com/efantasy/auth/db"
-	"github.com/efantasy/auth/internal"
+
+	"github.com/barreyo/efantasy/libs/healthz"
+	"github.com/barreyo/efantasy/services/auth/internal"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 )
@@ -41,9 +43,9 @@ func main() {
 	e.Use(echomiddleware.Logger())
 	e.Use(echomiddleware.RequestID())
 	e.Use(middleware.OapiRequestValidator(swagger))
+	healthz.RegisterHealthChecks(*e)
 
 	// Register routes
-	internal.RegisterHealthChecks(e)
 	auth.RegisterHandlers(e, authAPI)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", *port)))

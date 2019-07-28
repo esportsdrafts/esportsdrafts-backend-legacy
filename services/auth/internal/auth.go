@@ -4,17 +4,16 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"unicode/utf8"
 	"time"
+	"unicode/utf8"
 
+	auth "github.com/barreyo/efantasy/services/auth/api"
+	"github.com/barreyo/efantasy/services/auth/db"
 	"github.com/jinzhu/gorm"
-	auth "github.com/efantasy/auth/api"
-	"github.com/efantasy/auth/db"
 	"github.com/labstack/echo/v4"
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 )
 
-const defaultErrorMessage = "Failed to create new Account"
+const defaultErrorMessage = "Authentication error"
 
 type AuthAPI struct {
 	dbHandler *gorm.DB
@@ -35,14 +34,6 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 	return err
 }
 
-func healthz(ctx echo.Context) error {
-	return nil
-}
-
-func RegisterHealthChecks(router runtime.EchoRouter) {
-	router.GET("/healthz", healthz)
-}
-
 func writeHeaderPayloadCookie(ctx echo.Context) {
 	cookie := new(http.Cookie)
 	cookie.Name = "username"
@@ -59,7 +50,7 @@ func writeSignatureCookie(ctx echo.Context) {
 	ctx.SetCookie(cookie)
 }
 
-func (a *AuthAPI)PerformAuth(ctx echo.Context) error {
+func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	var newAuthClaim auth.AuthClaim
 
 	err := ctx.Bind(&newAuthClaim)
@@ -130,7 +121,7 @@ func validEmailString(email string) bool {
 	return true
 }
 
-func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
+func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	var newAccount auth.Account
 	err := ctx.Bind(&newAccount)
 
@@ -180,9 +171,9 @@ func (a *AuthAPI)CreateAccount(ctx echo.Context) error {
 		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
 
-	dbAccount := &db.Account {
+	dbAccount := &db.Account{
 		Username: newUsername,
-		Email: newAccount.Email,
+		Email:    newAccount.Email,
 		Password: hashedPassword,
 	}
 
