@@ -29,13 +29,15 @@ rules:
     - post
     - create
 - apiGroups: [""]
-  resources: ["pods"]
+  resources: ["pods", "nodes"]
   verbs:
     - list
+    - get
+    - watch
 - apiGroups:
     - "extensions"
   resources:
-    - "ingresses"
+    - "networking.k8s.io"
   verbs:
     - get
     - watch
@@ -52,6 +54,16 @@ rules:
     - get
     - create
     - update
+    - watch
+- apiGroups:
+    - "networking.k8s.io"
+  resources:
+    - "*"
+  verbs:
+    - get
+    - list
+    - update
+    - watch
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
