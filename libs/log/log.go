@@ -17,7 +17,6 @@ func GetLogger() *logrus.Logger {
 	if env == "production" || env == "prod" {
 		logger.SetFormatter(&logrus.JSONFormatter{})
 	}
-	// logger.SetOutput(os.Stdout)
 
 	return logger
 }

@@ -62,3 +62,10 @@ def user(api_env_url: Text,
         url=api_env_url
     )
     return new_user
+
+
+@pytest.fixture()
+def authed_user(user):
+    user.login()
+    # TODO: Handle 2FA
+    return user
