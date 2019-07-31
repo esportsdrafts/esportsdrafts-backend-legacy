@@ -3,6 +3,7 @@ package internal
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -92,7 +93,7 @@ func validUserNameString(name string) bool {
 		return false
 	}
 
-	// Make sure only valid characters in name [a-z][0-9]
+	// Make sure only valid characters in name [a-z][0-9] and - or _
 	for _, r := range name {
 		if r == '_' || r == '-' {
 			continue
@@ -118,7 +119,8 @@ func validPasswordString(password string) bool {
 
 // TODO: Do more validation?
 func validEmailString(email string) bool {
-	if !strings.Contains(email, "@") {
+	var re = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+	if len(re.FindStringIndex(email)) == 0 {
 		return false
 	}
 	return true
