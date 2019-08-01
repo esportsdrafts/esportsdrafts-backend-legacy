@@ -15,7 +15,7 @@ GIT_HASH  		 = $(shell git rev-parse --verify HEAD)
 BOLD 			:= $(shell tput bold)
 RESET 			:= $(shell tput sgr0)
 
-.PHONY: services $(SERVICES) docker-base frontend watch integration-tests \
+.PHONY: services $(SERVICES) docker-base frontend watch tests integration-tests \
 	version clean help
 
 .DEFAULT_GOAL := help
@@ -38,8 +38,14 @@ frontend:  ## Build frontend. Requires that the repo is cloned in parent directo
 watch:  ## Start up a local development environment that watches and redeploys changes automatically
 	tilt up --watch
 
+tests:  ## Run all unit tests and print coverage
+	go test ./... -v -cover
+
 integration-tests:  ## Run all integration tests, by default against local environment
 	python3.6 -m pytest --env $(ENVIRONMENT) -vx -s tests.tests
+
+sec-scan:  ## Run security scan on all repos. Requires 'gosec' installed
+	gosec ./...
 
 version:  ## Print the current version
 	@echo $(VERSION_LONG)
