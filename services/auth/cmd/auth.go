@@ -26,13 +26,13 @@ func main() {
 
 	swagger, err := auth.GetSwagger()
 	if err != nil {
-		log.Fatal("Error loading swagger spec: %s", err)
+		log.Fatal("Error loading swagger spec: ", err)
 	}
 	swagger.Servers = nil
 
 	dbHandler, err := db.CreateDBHandler(*dbHostname, *dbUser, *dbPassword, "auth_db")
 	if err != nil {
-		log.Fatal("Error connecting to DB: %s\n", err)
+		log.Fatal("Error connecting to DB: ", err)
 	}
 	defer dbHandler.Close()
 
@@ -44,7 +44,7 @@ func main() {
 	e.Use(middleware.OapiRequestValidator(swagger))
 	e.Use(efanlog.EchoLoggingMiddleware())
 
-	healthz.RegisterHealthChecks(*e)
+	healthz.RegisterHealthChecks(e)
 
 	// Register routes
 	auth.RegisterHandlers(e, authAPI)

@@ -3,10 +3,8 @@ package internal
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
-	"unicode/utf8"
 
 	auth "github.com/barreyo/efantasy/services/auth/api"
 	"github.com/barreyo/efantasy/services/auth/db"
@@ -35,6 +33,10 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 	return err
 }
 
+func shouldSetCookie(ctx echo.Context) bool {
+	return true
+}
+
 func writeHeaderPayloadCookie(ctx echo.Context) {
 	cookie := new(http.Cookie)
 	cookie.Name = "username"
@@ -51,6 +53,8 @@ func writeSignatureCookie(ctx echo.Context) {
 	ctx.SetCookie(cookie)
 }
 
+// PerformAuth performs an authentication request the auth path is based on
+// what claim the caller makes.
 func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	var newAuthClaim auth.AuthClaim
 
@@ -63,10 +67,19 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	case "username+password":
 		var account db.Account
 
+		if !ValidUserNameString(*newAuthClaim.Username) {
+			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
+		}
+
+		// Still in plain text at this point
+		if !ValidPasswordString(*newAuthClaim.Password) {
+			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
+		}
+
 		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
 		if err != nil {
-			return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid username or password")
+			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
 		match, err := ComparePasswordAndHash(*newAuthClaim.Password, account.Password)
@@ -75,7 +88,7 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 		}
 
 		if !match {
-			return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid username or password")
+			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
 		return nil
@@ -84,101 +97,64 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	}
 }
 
-func validUserNameString(name string) bool {
-	characterCount := utf8.RuneCountInString(name)
-
-	// Check max and min length
-	// TODO: Make these limits globally configurable
-	if characterCount < 5 || characterCount > 30 {
-		return false
-	}
-
-	// Make sure only valid characters in name [a-z][0-9] and - or _
-	for _, r := range name {
-		if r == '_' || r == '-' {
-			continue
-		}
-		if (r < 'a' || r > 'z') && (r < '0' || r > '9') {
-			return false
-		}
-	}
-
-	// Protect test accounts
-	if strings.HasPrefix(name, "test_user") {
-		return false
-	}
-	return true
-}
-
-func validPasswordString(password string) bool {
-	if len(password) < 12 || len(password) > 127 {
-		return false
-	}
-	return true
-}
-
-// TODO: Do more validation?
-func validEmailString(email string) bool {
-	var re = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
-	if len(re.FindStringIndex(email)) == 0 {
-		return false
-	}
-	return true
-}
-
+// CreateAccount creates a new Account
 func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	var newAccount auth.Account
 	err := ctx.Bind(&newAccount)
 
 	newUsername := strings.ToLower(newAccount.Username)
+	newEmail := newAccount.Email
+	newPassword := newAccount.Password
 
 	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
 	}
 
-	if !validUserNameString(newUsername) {
+	if !ValidUserNameString(newUsername) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Username has to be between 5 and 30 characters inclusive and can only contain [a-z][0-9], underscores and dashes")
 	}
 
 	// Still in plain text at this point
-	if !validPasswordString(newAccount.Password) {
+	if !ValidPasswordString(newPassword) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Password has to be between 12 and 127 characters inclusive")
 	}
 
-	if !validEmailString(newAccount.Email) {
+	if !ValidEmailString(newEmail) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Invalid email format")
 	}
 
-	// TODO: These can be in the same query
+	// TODO: These queries can be in the same transaction
 
-	var count int
 	// Check if username is in use
-	a.dbHandler.Where(db.Account{Username: newUsername}).Count(&count)
-	if count > 0 {
+	err = a.dbHandler.Where(db.Account{Username: newUsername}).Error
+	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
 
 	// Check if email is in use
-	a.dbHandler.Where(db.Account{Email: newAccount.Email}).Count(&count)
-	if count > 0 {
+	err = a.dbHandler.Where(db.Account{Email: newEmail}).Error
+	if err != nil {
+		// Information leak, someone could spam and figure out which emails
+		// are registered in the system.
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			fmt.Sprintf("The provided email '%s' is already registered", newAccount.Email))
+			fmt.Sprintf("The provided email is already registered"))
 	}
 
 	// Grab plain-text password, salt+hash it then save to DB
 	hashingParams := GetDefaultHashingParams()
-	hashedPassword, err := GenerateFromPassword(newAccount.Password, hashingParams)
+	hashedPassword, err := GenerateFromPassword(newPassword, hashingParams)
 	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
 
+	// TODO: Encrypt all fields except UserID
 	dbAccount := &db.Account{
 		Username: newUsername,
-		Email:    newAccount.Email,
+		Email:    newEmail,
 		Password: hashedPassword,
 	}
 
