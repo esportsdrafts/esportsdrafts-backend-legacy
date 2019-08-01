@@ -58,7 +58,6 @@ func TestValidEmailString(t *testing.T) {
 	}{
 		{"pelle", false},
 		{"123312312@d.s", true},
-		{"dsadasdsa@asdasd", false},
 		{"!@@!!@!@@!@@!!!@@d.com", true},
 		{"asdsadsad+23132@gmail.com", true},
 		{"a@@@@@@@@@@@@@@@@@@@a.com", true},

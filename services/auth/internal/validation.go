@@ -42,7 +42,7 @@ func ValidPasswordString(password string) bool {
 // ValidEmailString returns true if string contains @ and a punctuation,
 // more validation than that will most likely be wrong and piss off users.
 func ValidEmailString(email string) bool {
-	var re = regexp.MustCompile(`^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+	var re = regexp.MustCompile(`^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`)
 	if len(re.FindStringIndex(email)) == 0 {
 		return false
 	}
