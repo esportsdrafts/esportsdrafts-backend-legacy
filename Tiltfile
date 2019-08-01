@@ -22,6 +22,10 @@ services_k8s_files = [
     'services/mysql/k8s/deployment.yaml',
     'services/mysql/k8s/service.yaml',
 
+    # BEANSTALKD
+    'services/beanstalkd/k8s/deployment.yaml',
+    'services/beanstalkd/k8s/service.yaml',
+
     # FRONTEND
     'services/frontend/k8s/deployment.yaml',
     'services/frontend/k8s/service.yaml',
@@ -43,3 +47,6 @@ docker_build('efantasy-mysql', 'services/mysql',
 
 docker_build('efantasy-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile')
+
+docker_build('efantasy-beanstalkd', 'services/beanstalkd',
+             dockerfile='services/beanstalkd/Dockerfile')
