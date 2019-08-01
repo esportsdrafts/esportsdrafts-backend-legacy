@@ -34,6 +34,9 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 }
 
 func shouldSetCookie(ctx echo.Context) bool {
+	if ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest" {
+		return true
+	}
 	return true
 }
 

@@ -8,7 +8,6 @@ import (
 	"github.com/barreyo/efantasy/services/auth/db"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
 
-	"github.com/barreyo/efantasy/libs/healthz"
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	"github.com/barreyo/efantasy/services/auth/internal"
 	"github.com/labstack/echo/v4"
@@ -44,7 +43,7 @@ func main() {
 	e.Use(middleware.OapiRequestValidator(swagger))
 	e.Use(efanlog.EchoLoggingMiddleware())
 
-	healthz.RegisterHealthChecks(e)
+	// healthz.RegisterHealthChecks(e)
 
 	// Register routes
 	auth.RegisterHandlers(e, authAPI)
