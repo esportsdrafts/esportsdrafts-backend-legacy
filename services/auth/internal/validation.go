@@ -33,7 +33,7 @@ func ValidUserNameString(name string) bool {
 // ValidPasswordString returns if password has correct length
 func ValidPasswordString(password string) bool {
 	// Arbitrary upper limit. Schrugz in security.
-	if len(password) < 12 || len(password) > 128 {
+	if len([]rune(password)) < 12 || len([]rune(password)) > 128 {
 		return false
 	}
 	return true
