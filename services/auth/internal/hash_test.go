@@ -59,17 +59,6 @@ func TestCompareTimeNotMatchingDefaults(t *testing.T) {
 	ComparePasswordAndHash("SomE_other_r4nd0m_password", hashed)
 }
 
-func mean(n []float64) float64 {
-	total := 0.0
-
-	for _, v := range n {
-		total += v
-	}
-
-	// IMPORTANT: return was rounded!
-	return math.Round(total / float64(len(n)))
-}
-
 func TestCompareTimeConstantDefaults(t *testing.T) {
 	params := GetDefaultHashingParams()
 	testStrings := []string{
@@ -98,6 +87,17 @@ func TestCompareTimeConstantDefaults(t *testing.T) {
 			t.Errorf("ComparePasswordAndHash has inconsistent compare time")
 		}
 	}
+}
+
+//
+// Testing Helpers
+//
+func mean(n []float64) float64 {
+	total := 0.0
+	for _, v := range n {
+		total += v
+	}
+	return math.Round(total / float64(len(n)))
 }
 
 // Bounds are measured in milliseconds

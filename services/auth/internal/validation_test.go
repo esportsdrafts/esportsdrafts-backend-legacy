@@ -57,16 +57,18 @@ func TestValidEmailString(t *testing.T) {
 		isValid bool
 	}{
 		{"pelle", false},
-		{"123312312@d.s", true},
-		{"!@@!!@!@@!@@!!!@@d.com", true},
+		{"123312312@ds.ss", true},
+		{"!@@!!@!@@!@@!!!@sd.com", false},
 		{"asdsadsad+23132@gmail.com", true},
-		{"a@@@@@@@@@@@@@@@@@@@a.com", true},
-		{"                     abc@asv.com", true},
-		{"dddd     @lds.s", true},
+		{"a@@@@@@@@@@@@@@@@@@@a.com", false},
+		{"                     abc@asv.com", false},
+		{"dddd     @lds.ss", false},
+		{"pelle@gmail.com", true},
+		{" ", false},
 		{"", false},
 	}
 	for _, table := range tables {
-		res := ValidPasswordString(table.input)
+		res := ValidEmailString(table.input)
 		if res != table.isValid {
 			t.Errorf("Validating password '%s' was incorrect, got %t, wanted %t", table.input, res, table.isValid)
 		}

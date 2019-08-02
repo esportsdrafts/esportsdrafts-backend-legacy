@@ -60,6 +60,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
+  /v1/auth/verify:
+    post:
+      summary: Verify a user's email
+      operationId: verify
+      tags:
+        - auth
+      requestBody:
+        description: Verification code
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerificationCode'
+      responses:
+        '200':
+          description: Returned if verification was successful
+        '404':
+          description: The provided verfication token was not found. Possibly expired.
+        default:
+          description: Unexpected error occured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
   schemas:
@@ -100,6 +124,13 @@ components:
           type: string
         expires_in:
           type: integer
+    VerificationCode:
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          format: uuid
     Error:
       required:
         - code

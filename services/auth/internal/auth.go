@@ -18,6 +18,7 @@ type AuthAPI struct {
 	dbHandler *gorm.DB
 }
 
+// NewAuthAPI constructs an API client
 func NewAuthAPI(dbHandler *gorm.DB) *AuthAPI {
 	return &AuthAPI{
 		dbHandler: dbHandler,
@@ -173,4 +174,10 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	}
 
 	return nil
+}
+
+// Verify takes a token and if it is associated with any user, mark the user's
+// email as 'verified'.
+func (a *AuthAPI) Verify(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, map[string]int{})
 }

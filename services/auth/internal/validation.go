@@ -5,6 +5,17 @@ import (
 	"unicode/utf8"
 )
 
+type InputValidator interface {
+	ValidUsername(name string) bool
+	ValidateEmail(email string) bool
+	ValidatePassword(password string) bool
+}
+
+type DefaultValidator struct {
+	maxUsernameLength, minUsernameLength int
+	maxPasswordLength, minPasswordLength int
+}
+
 // ValidUserNameString validates a username entry according to two rules:
 //   * Can only contain [a-z][0-9] and - or _
 // 	 * 5 <= Length <= 30

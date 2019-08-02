@@ -12,10 +12,15 @@ import (
 )
 
 var (
-	ErrInvalidHash         = errors.New("The encoded hash is not in the correct format")
+	// ErrInvalidHash is returned if a hashed string contains wrong metadata
+	ErrInvalidHash = errors.New("The encoded hash is not in the correct format")
+
+	// ErrIncompatibleVersion is returned if the metadata indicates that the
+	// argon hashing algorithm version is not the correct one.
 	ErrIncompatibleVersion = errors.New("Incompatible version of argon2")
 )
 
+// Params holds hashing parameters for Argon2
 type Params struct {
 	memory      uint32
 	iterations  uint32
@@ -24,7 +29,22 @@ type Params struct {
 	keyLength   uint32
 }
 
-// TODO: fetch from command line / env variables
+// SaltGenerator defines the functions to generate cryptographically secure
+// random salts.
+type SaltGenerator interface {
+	Generate(n uint32) ([]byte, error)
+}
+
+// HashDecoder has required functions to take an encoded hash and decode it.
+type HashDecoder interface {
+	Decode(encodedHash string) (p *Params, salt, hash []byte, err error)
+}
+
+type RandReadGenerator struct{}
+type Argon2HashDecoder struct{}
+
+// GetDefaultHashingParams returns sane defaults for the hashing.
+// Verified by unit tests. See 'internal/test_hash.go'.
 func GetDefaultHashingParams() *Params {
 	return &Params{
 		memory:      64 * 1024,
@@ -35,6 +55,8 @@ func GetDefaultHashingParams() *Params {
 	}
 }
 
+// GenerateFromPassword generates a hashed string from a plain-text password
+// using the specified parameters (usually 'GetDefaultHashingParams()').
 func GenerateFromPassword(password string, p *Params) (hash string, err error) {
 	// Generate a cryptographically secure random salt.
 	salt, err := generateRandomBytes(p.saltLength)
@@ -64,6 +86,12 @@ func generateRandomBytes(n uint32) ([]byte, error) {
 	return b, nil
 }
 
+// ComparePasswordAndHash takes a plain-text password and a hashed password,
+// hashes the plain-text password using the parameters from the hashed one, and
+// then compares them. Returns true if they are equal; otherwise false.
+// -
+// NOTE: Compares using a constant time comparison function. This means this
+// 		 function is deterministically slow.
 func ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
