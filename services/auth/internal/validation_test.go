@@ -5,7 +5,8 @@ import (
 	"testing"
 )
 
-func TestValidUsernameString(t *testing.T) {
+func TestValidUsername(t *testing.T) {
+	validator := GetDefaultValidator()
 	tables := []struct {
 		input   string
 		isValid bool
@@ -21,14 +22,15 @@ func TestValidUsernameString(t *testing.T) {
 		{"", false},
 	}
 	for _, table := range tables {
-		res := ValidUserNameString(table.input)
+		res := validator.ValidateUsername(table.input)
 		if res != table.isValid {
 			t.Errorf("Validating username '%s' was incorrect, got %t, wanted %t", table.input, res, table.isValid)
 		}
 	}
 }
 
-func TestValidPasswordString(t *testing.T) {
+func TestValidPassword(t *testing.T) {
+	validator := GetDefaultValidator()
 	tables := []struct {
 		input   string
 		isValid bool
@@ -44,7 +46,7 @@ func TestValidPasswordString(t *testing.T) {
 		{"", false},
 	}
 	for _, table := range tables {
-		res := ValidPasswordString(table.input)
+		res := validator.ValidatePassword(table.input)
 		if res != table.isValid {
 			t.Errorf("Validating password '%s' was incorrect, got %t, wanted %t", table.input, res, table.isValid)
 		}
@@ -52,6 +54,7 @@ func TestValidPasswordString(t *testing.T) {
 }
 
 func TestValidEmailString(t *testing.T) {
+	validator := GetDefaultValidator()
 	tables := []struct {
 		input   string
 		isValid bool
@@ -68,7 +71,7 @@ func TestValidEmailString(t *testing.T) {
 		{"", false},
 	}
 	for _, table := range tables {
-		res := ValidEmailString(table.input)
+		res := validator.ValidateEmail(table.input)
 		if res != table.isValid {
 			t.Errorf("Validating password '%s' was incorrect, got %t, wanted %t", table.input, res, table.isValid)
 		}

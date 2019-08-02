@@ -40,8 +40,37 @@ type HashDecoder interface {
 	Decode(encodedHash string) (p *Params, salt, hash []byte, err error)
 }
 
+// RandReadGenerator standard cryptographically safe generator using rand.Read().
 type RandReadGenerator struct{}
+
+// Argon2HashDecoder decodes the standard format for Argon2 encoded strings.
 type Argon2HashDecoder struct{}
+
+// ErrorMockGenerator always returns generator errors.
+type ErrorMockGenerator struct{}
+
+// ErrorMockDecoder always returns decoder errors.
+type ErrorMockDecoder struct{}
+
+// Generate will generate random bytes cryptographically safe.
+func (r *RandReadGenerator) Generate(n uint32) ([]byte, error) {
+	return generateRandomBytes(n)
+}
+
+// Decode decodes an Argon2 encoded string
+func (d *Argon2HashDecoder) Decode(encoded string) (p *Params, salt, hash []byte, err error) {
+	return decodeHash(encoded)
+}
+
+// Generate always return error
+func (r *ErrorMockGenerator) Generate(n uint32) ([]byte, error) {
+	return nil, fmt.Errorf("Generator mocked error")
+}
+
+// Decode always return error
+func (d *ErrorMockDecoder) Decode(encoded string) (p *Params, salt, hash []byte, err error) {
+	return nil, nil, nil, fmt.Errorf("Decode mocked error")
+}
 
 // GetDefaultHashingParams returns sane defaults for the hashing.
 // Verified by unit tests. See 'internal/test_hash.go'.
@@ -55,11 +84,9 @@ func GetDefaultHashingParams() *Params {
 	}
 }
 
-// GenerateFromPassword generates a hashed string from a plain-text password
-// using the specified parameters (usually 'GetDefaultHashingParams()').
-func GenerateFromPassword(password string, p *Params) (hash string, err error) {
+func fGenFromPassword(password string, p *Params, saltGenerator SaltGenerator) (hash string, err error) {
 	// Generate a cryptographically secure random salt.
-	salt, err := generateRandomBytes(p.saltLength)
+	salt, err := saltGenerator.Generate(p.saltLength)
 	if err != nil {
 		return "", err
 	}
@@ -71,9 +98,19 @@ func GenerateFromPassword(password string, p *Params) (hash string, err error) {
 	b64Hash := base64.RawStdEncoding.EncodeToString(hashed)
 
 	// Return a string using the standard encoded hash representation.
-	encodedHash := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, p.memory, p.iterations, p.parallelism, b64Salt, b64Hash)
+	encodedHash := constructEncodedString(p.memory, p.iterations, p.parallelism, b64Salt, b64Hash)
 
 	return encodedHash, nil
+}
+
+// GenerateFromPassword generates a hashed string from a plain-text password
+// using the specified parameters (usually 'GetDefaultHashingParams()').
+func GenerateFromPassword(password string, p *Params) (hash string, err error) {
+	return fGenFromPassword(password, p, &RandReadGenerator{})
+}
+
+func constructEncodedString(memory uint32, iterations uint32, parallelism uint8, b64Salt string, b64Hash string) string {
+	return fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s", argon2.Version, memory, iterations, parallelism, b64Salt, b64Hash)
 }
 
 func generateRandomBytes(n uint32) ([]byte, error) {
@@ -86,16 +123,10 @@ func generateRandomBytes(n uint32) ([]byte, error) {
 	return b, nil
 }
 
-// ComparePasswordAndHash takes a plain-text password and a hashed password,
-// hashes the plain-text password using the parameters from the hashed one, and
-// then compares them. Returns true if they are equal; otherwise false.
-// -
-// NOTE: Compares using a constant time comparison function. This means this
-// 		 function is deterministically slow.
-func ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
+func fComparePasswordAndHash(password, encodedHash string, decoder HashDecoder) (match bool, err error) {
 	// Extract the parameters, salt and derived key from the encoded password
 	// hash.
-	p, salt, hash, err := decodeHash(encodedHash)
+	p, salt, hash, err := decoder.Decode(encodedHash)
 	if err != nil {
 		return false, err
 	}
@@ -104,6 +135,16 @@ func ComparePasswordAndHash(password, encodedHash string) (match bool, err error
 	otherHash := argon2.IDKey([]byte(password), salt, p.iterations, p.memory, p.parallelism, p.keyLength)
 
 	return subtle.ConstantTimeCompare(hash, otherHash) == 1, nil
+}
+
+// ComparePasswordAndHash takes a plain-text password and a hashed password,
+// hashes the plain-text password using the parameters from the hashed one, and
+// then compares them. Returns true if they are equal; otherwise false.
+// -
+// NOTE: Compares using a constant time comparison function. This means this
+// 		 function is deterministically slow.
+func ComparePasswordAndHash(password, encodedHash string) (match bool, err error) {
+	return fComparePasswordAndHash(password, encodedHash, &Argon2HashDecoder{})
 }
 
 func decodeHash(encodedHash string) (p *Params, salt, hash []byte, err error) {

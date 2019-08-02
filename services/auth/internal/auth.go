@@ -14,14 +14,22 @@ import (
 
 const defaultErrorMessage = "Authentication server error"
 
+// AuthAPI holds global handlers for the API like Databases.
 type AuthAPI struct {
-	dbHandler *gorm.DB
+	dbHandler      *gorm.DB
+	inputValidator InputValidator
 }
 
 // NewAuthAPI constructs an API client
 func NewAuthAPI(dbHandler *gorm.DB) *AuthAPI {
 	return &AuthAPI{
 		dbHandler: dbHandler,
+		inputValidator: &BasicValidator{
+			maxUsernameLength: 30,
+			minUsernameLength: 5,
+			maxPasswordLength: 128,
+			minPasswordLength: 12,
+		},
 	}
 }
 
@@ -34,6 +42,7 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 	return err
 }
 
+// TODO: Move this into a shared auth lib
 func shouldSetCookie(ctx echo.Context) bool {
 	if ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest" {
 		return true
@@ -71,12 +80,12 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	case "username+password":
 		var account db.Account
 
-		if !ValidUserNameString(*newAuthClaim.Username) {
+		if !a.inputValidator.ValidateUsername(*newAuthClaim.Username) {
 			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
 		}
 
 		// Still in plain text at this point
-		if !ValidPasswordString(*newAuthClaim.Password) {
+		if !a.inputValidator.ValidatePassword(*newAuthClaim.Password) {
 			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
 		}
 
@@ -114,18 +123,18 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
 	}
 
-	if !ValidUserNameString(newUsername) {
+	if !a.inputValidator.ValidateUsername(newUsername) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Username has to be between 5 and 30 characters inclusive and can only contain [a-z][0-9], underscores and dashes")
 	}
 
 	// Still in plain text at this point
-	if !ValidPasswordString(newPassword) {
+	if !a.inputValidator.ValidatePassword(newPassword) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Password has to be between 12 and 127 characters inclusive")
 	}
 
-	if !ValidEmailString(newEmail) {
+	if !a.inputValidator.ValidateEmail(newEmail) {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			"Invalid email format")
 	}
