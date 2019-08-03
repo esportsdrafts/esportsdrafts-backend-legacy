@@ -118,9 +118,9 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
 		}
 
-		notFound := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).RecordNotFound()
+		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
-		if notFound {
+		if err != nil {
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
@@ -210,16 +210,19 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 			"Invalid email format")
 	}
 
+	// TODO: These queries can be in the same transaction
+	var count int
+
 	// Check if username is in use
-	notFound := a.dbHandler.Where(db.Account{Username: newUsername}).RecordNotFound()
-	if !notFound {
+	a.dbHandler.Where(db.Account{Username: newUsername}).Count(&count)
+	if count != 0 {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
 
 	// Check if email is in use
-	notFound = a.dbHandler.Where(db.Account{Email: newEmail}).RecordNotFound()
-	if !notFound {
+	a.dbHandler.Where(db.Account{Email: newEmail}).Count(&count)
+	if count != 0 {
 		// Information leak, someone could spam and figure out which emails
 		// are registered in the system.
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
