@@ -1,6 +1,4 @@
 # -*- mode: Python -*-
-default_registry(read_json('tilt_option.json', {})
-                 .get('default_registry', 'gcr.io/windmill-public-containers/servantes'))
 
 services_k8s_files = [
     # GENERAL/GLOBAL CONFIG

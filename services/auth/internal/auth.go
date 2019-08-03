@@ -16,9 +16,12 @@ import (
 
 const defaultErrorMessage = "Authentication server error"
 
-// TODO: Fill from env variables
+// TODO: Fill from env variables and/or using KMS
 var jwtKey = []byte("my_secret_key")
 
+// JWTClaims holds eFantasy auth claims. Roles array denotes what the user
+// can do within the application. For example and 'admin' would have elevated
+// access compared to a 'user'.
 type JWTClaims struct {
 	Username string   `json:"username"`
 	UserID   string   `json:"user_id"`
@@ -115,9 +118,9 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
 		}
 
-		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
+		notFound := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).RecordNotFound()
 		// Verify username and password
-		if err != nil {
+		if notFound {
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
@@ -207,18 +210,16 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 			"Invalid email format")
 	}
 
-	// TODO: These queries can be in the same transaction
-
 	// Check if username is in use
-	err = a.dbHandler.Where(db.Account{Username: newUsername}).Error
-	if err != nil {
+	notFound := a.dbHandler.Where(db.Account{Username: newUsername}).RecordNotFound()
+	if !notFound {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
 
 	// Check if email is in use
-	err = a.dbHandler.Where(db.Account{Email: newEmail}).Error
-	if err != nil {
+	notFound = a.dbHandler.Where(db.Account{Email: newEmail}).RecordNotFound()
+	if !notFound {
 		// Information leak, someone could spam and figure out which emails
 		// are registered in the system.
 		return sendAuthAPIError(ctx, http.StatusBadRequest,

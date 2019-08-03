@@ -129,7 +129,6 @@ components:
       properties:
         code:
           type: string
-          format: uuid
     Error:
       required:
         - code

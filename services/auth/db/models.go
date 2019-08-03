@@ -28,7 +28,7 @@ type Account struct {
 	Base
 	Username               string     `gorm:"varchar(100);not null;unique_index" json:"username"`
 	Email                  string     `gorm:"varchar(100);not null;unique_index" json:"email"`
-	Password               string     `gorm:"column:password_hash;varchar(256);not null" json:"password_hash"`
+	Password               string     `gorm:"column:password_hash;varchar(256);not null" json:"-"`
 	AcceptedTermsAt        *time.Time `json:"accepted_terms_at"`
 	EmailVerifiedAt        *time.Time `json:"email_verified_at"`
 	EmailVerificationCodes []EmailVerificationCode

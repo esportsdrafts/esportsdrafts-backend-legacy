@@ -1,3 +1,5 @@
+# github.com/beanstalkd/go-beanstalk v0.0.0-20190515041346-390b03b3064a
+github.com/beanstalkd/go-beanstalk
 # github.com/deepmap/oapi-codegen v1.2.5
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/middleware
