@@ -8,11 +8,10 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"fmt"
-	"strings"
-
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"strings"
 )
 
 // Account defines model for Account.
@@ -38,9 +37,9 @@ type Error struct {
 
 // JWT defines model for JWT.
 type JWT struct {
-	AccessToken string `json:"access_token"`
-	ExpiresIn   int    `json:"expires_in"`
-	IdToken     string `json:"id_token"`
+	AccessToken string  `json:"access_token"`
+	ExpiresIn   int     `json:"expires_in"`
+	IdToken     *string `json:"id_token,omitempty"`
 }
 
 // VerificationCode defines model for VerificationCode.
@@ -115,20 +114,20 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7xW34/bNgz+VwRtwB5q5MfdPflpt8M2rE/FdlsfikOhs+hEqy1pJJWcUeR/Hyj7cnbj",
-	"bCnQ9iURRIn8SH785I+6Cm0MHjyTLj9qqrbQmry8raqQPMsyYoiA7CAboDWukQV3EXSpidH5jT4UOhqi",
-	"fUA7a0wE6E0LM8ZDoRH+SQ7B6vLdEGB0Y+T54VDo28Tbu8a49hRb9bwNPrXi69nHq6OHQl/VRktED3v9",
-	"UJwirYKFr5lfD1Iy+Rkx4EwWA4A6YGtYl9p5vr7SR6jOM2wAJWoLRGZzSVDx+XJeor9+e38a21QVEL3n",
-	"8AH8bJ7wFB0CvXdj8wiRs2cvfwJpEmp0cRJDgP4F6GpXGXbB3w21+Z+KpeSsLi6pycPhkHvuKbXi7J02",
-	"MTZDtOXfFLyQxPk65IwcN+IRfjGeDXXKJN7qQu8AyQWvS71erBYrKUSI4E10utTXeUv4w9sMd7lbL+Vi",
-	"/snZBMqTJjnlwL9ZXeoIKAnd9iEEORD/FGzXp+wZ+vk8AXycZFl9j1DrUn+3fBn15TDny5dRylWwQBW6",
-	"yH0mYgTPg2eVaUvKeNsvlTVs9LiijAlyiSkGT31nrlarL4ZWCDuD8/Xb+9yGEdaeSPlkbVLDXwxCP7Ez",
-	"IJKHpwgVg1UwnCk0pbY12E1rCcooEQuFwAm98xtllORQB1R14oSgjjzo603AioDomFo++4hhT4AkPDeb",
-	"nrpClQcJfaQYwsYRA56nWYVgGJ71/nOJBk+mjQ2MXob+/8dtIBZBXFShHUt4KcPS/cG48ps3N0T7VVbl",
-	"F/3Um5v2Gn9dY7O+lh5eSOUB/xyRe5OywMY1dAFn1/I374RSlq06NU2n+tLZb8q0P/0HH/Z+lmZ3GY8y",
-	"ysNemWNH/4MeO9HW7jw5BvvXkZ8TYZ9Jd3xGDa/YRZIzdfN7HjawytVqN3a5NzTqqXTyZnVzev9+Cypi",
-	"2DkLVhzUE6nJXnxgVYfk7UK9CUTuselU/5LZxTdmyFSLVKiqJOWakiVXthvU6AdSz99dn7JFvnww2FSd",
-	"eR6LyVbE8NhA+6p/OQ//BgAA//+vBzWwYgoAAA==",
+	"H4sIAAAAAAAC/7xWTY/bNhD9KwRboIcI/tjdk07dLtqiOQXttjkEi4Arjmw2EsnODO0VAv/3YiitV4rl",
+	"1gGSXGxCpGbem3nzqI+6Cm0MHjyTLj9qqrbQmry8raqQPMsyYoiA7CBvQGtcIwvuIuhSE6PzG30odDRE",
+	"+4B2djMRoDctzGweCo3wT3IIVpfvhgSjN0aRHw6Fvk28vWuMa0+xVc+PwadWYj3HeHWMUOir2mjJ6GGv",
+	"H4pTpFWw8DX59SCFyc+IAWdYDADqgK1hXWrn+fpKH6E6z7ABlKwtEJnNJUkl5st5yf767f1pblNVQPSe",
+	"wwfwszzhKToEeu/G2yNEzp59+RNIk1STwILuL0BXu8qwC/5uKMj/lCklZ3VxSSEeDofcaE+plWDvtImx",
+	"GbIt/6bgRRnO1yHTcNxIRPjFeDbUKZN4qwu9AyQXvC71erFarIR9iOBNdLrU1/mRiIa3Ge5yt17Ki/kn",
+	"swmUx0s45cS/WV3qCCiEbvsUghyIfwq26yl7hn4oTwAfx1dW3yPUutTfLV/mezkM9/JlfnIVLFCFLnLP",
+	"RDbB8xBZZa2SMt72S2UNGz2uKGOCXGKKwVPfmavV6ouhFZXO4Hz99j63YYS1F1I+WZvU8BeD0I/pDIjk",
+	"4SlCxWAVDGcKTaltDXbTWoIyShxCIXBC7/xGGSUc6oCqTpwQ1FEHfb0JWBEQHanls48Y9gRIonOz6aUr",
+	"UnmQ1EeJIWwcMeB5mVUIhuHZ5D9XaPBk2tjA6Dro/3/cBmJxwUUV2rFvlzIs3R+MK795c0O0X2UrfjFN",
+	"vblpr/HXNTbra+nhhVIe8M8Jud9SFti4hi7Q7Fr+5oNQyl5Vp6bpVF86+02V9qf/4MPez8rsLuNRRnnY",
+	"K3Ps6H/IYyfe2p0Xx7D/deznxNhn6I7PqOHqushypmF+z8MGVrla7cYh94ZGPZVO3qxuTt+/34KKGHbO",
+	"gpUA9cRqchQfWNUhebtQbwKRe2w61d9kdvGNFTL1IhWqKkm5pmLJle0GN/qB1PPH1qdqkc8dDDZVZ67H",
+	"YvIoYnhsoH3V35yHfwMAAP//GHzgblcKAAA=",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
@@ -154,3 +153,4 @@ func GetSwagger() (*openapi3.Swagger, error) {
 	}
 	return swagger, nil
 }
+

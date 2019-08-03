@@ -8,11 +8,23 @@ import (
 
 	auth "github.com/barreyo/efantasy/services/auth/api"
 	"github.com/barreyo/efantasy/services/auth/db"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
+	uuid "github.com/satori/go.uuid"
 )
 
 const defaultErrorMessage = "Authentication server error"
+
+// TODO: Fill from env variables
+var jwtKey = []byte("my_secret_key")
+
+type JWTClaims struct {
+	Username string   `json:"username"`
+	UserID   string   `json:"user_id"`
+	Roles    []string `json:"roles"`
+	jwt.StandardClaims
+}
 
 // AuthAPI holds global handlers for the API like Databases.
 type AuthAPI struct {
@@ -43,26 +55,40 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 }
 
 // TODO: Move this into a shared auth lib
-func shouldSetCookie(ctx echo.Context) bool {
+func hasRequestedWithHeader(ctx echo.Context) bool {
 	if ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest" {
 		return true
 	}
-	return true
+	return false
 }
 
-func writeHeaderPayloadCookie(ctx echo.Context) {
+func getAuthTokenFromHeader(ctx echo.Context) string {
+	return ctx.Request().Header.Get("Authentication")
+}
+
+func writeHeaderPayloadCookie(ctx echo.Context, header string) {
 	cookie := new(http.Cookie)
-	cookie.Name = "username"
-	cookie.Value = "jon"
-	cookie.Expires = time.Now().Add(30 * time.Minute)
+	cookie.Name = "header.payload"
+	cookie.Value = header
+
+	// Protect from sending over HTTP
+	cookie.Secure = true
+
+	// TODO: Make globally configurable
+	cookie.Expires = time.Now().Add(60 * time.Minute)
 	ctx.SetCookie(cookie)
 }
 
-func writeSignatureCookie(ctx echo.Context) {
+func writeSignatureCookie(ctx echo.Context, signature string) {
 	cookie := new(http.Cookie)
-	cookie.Name = "username"
-	cookie.Value = "jon"
-	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.Name = "signature"
+	cookie.Value = signature
+
+	// Protect from sending over HTTP
+	cookie.Secure = true
+
+	// Block JS from reading this cookie
+	cookie.HttpOnly = true
 	ctx.SetCookie(cookie)
 }
 
@@ -104,7 +130,49 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
-		return nil
+		issuedTime := time.Now()
+		expirationTime := issuedTime.Add(60 * time.Minute)
+
+		// Create the JWT claims, which includes the username and expiry time
+		claims := &JWTClaims{
+			Username: account.Username,
+			UserID:   account.ID.String(),
+			// Would be something more useful depending on the user type
+			Roles: []string{"user"},
+			StandardClaims: jwt.StandardClaims{
+				// In JWT, the expiry time is expressed as unix milliseconds
+				ExpiresAt: expirationTime.Unix(),
+				// Can be used to blacklist in the future. Needs to hold state
+				// in that case :/
+				Id:       uuid.NewV4().String(),
+				IssuedAt: issuedTime.Unix(),
+			},
+		}
+
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+		tokenString, err := token.SignedString(jwtKey)
+		if err != nil {
+			// If there is an error in creating the JWT return an internal server error
+			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+		}
+
+		// Web client so set cookies instead of returning
+		if hasRequestedWithHeader(ctx) {
+			parts := strings.Split(tokenString, ".")
+			signature := parts[2]
+			headerPayload := strings.Join(parts[0:2], ".")
+			writeSignatureCookie(ctx, signature)
+			writeHeaderPayloadCookie(ctx, headerPayload)
+			return ctx.JSON(http.StatusOK, map[string]int{})
+		}
+
+		result := auth.JWT{
+			AccessToken: tokenString,
+			ExpiresIn:   int(expirationTime.Unix()),
+		}
+		// Otherwise just give token
+		return ctx.JSON(http.StatusOK, result)
 	default:
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid authentication claim")
 	}
@@ -177,12 +245,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	}
 
 	// Empty JSON body with success status
-	err = ctx.JSON(http.StatusCreated, map[string]int{})
-	if err != nil {
-		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
-	}
-
-	return nil
+	return ctx.JSON(http.StatusCreated, map[string]int{})
 }
 
 // Verify takes a token and if it is associated with any user, mark the user's

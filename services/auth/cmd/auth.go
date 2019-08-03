@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	var port = flag.Int("port", 8000, "Port to server auth API")
+	var port = flag.Int("port", 8000, "Port to serve auth API")
 	var dbHostname = flag.String("db_hostname", "mysql", "DB hostname")
 	var dbUser = flag.String("db_user", "root", "DB hostname")
 	var dbPassword = flag.String("db_password", "password", "DB hostname")
