@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	efanlog "github.com/barreyo/efantasy/libs/log"
 	auth "github.com/barreyo/efantasy/services/auth/api"
 	"github.com/barreyo/efantasy/services/auth/db"
 	"github.com/dgrijalva/jwt-go"
@@ -31,14 +32,16 @@ type JWTClaims struct {
 
 // AuthAPI holds global handlers for the API like Databases.
 type AuthAPI struct {
-	dbHandler      *gorm.DB
-	inputValidator InputValidator
+	dbHandler        *gorm.DB
+	beanstalkHandler *BeanstalkdClient
+	inputValidator   InputValidator
 }
 
 // NewAuthAPI constructs an API client
-func NewAuthAPI(dbHandler *gorm.DB) *AuthAPI {
+func NewAuthAPI(dbHandler *gorm.DB, bClient *BeanstalkdClient) *AuthAPI {
 	return &AuthAPI{
-		dbHandler: dbHandler,
+		dbHandler:        dbHandler,
+		beanstalkHandler: bClient,
 		inputValidator: &BasicValidator{
 			maxUsernameLength: 30,
 			minUsernameLength: 5,
@@ -214,6 +217,8 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	var count int
 
 	// Check if username is in use
+	// Count vs first? Maybe simplify by not creating a struct, string
+	// query instead.
 	a.dbHandler.Where(db.Account{Username: newUsername}).Count(&count)
 	if count != 0 {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
@@ -246,6 +251,20 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	err = a.dbHandler.Save(&dbAccount).Error
 	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+	}
+
+	expirationTime := time.Now().Add(48 * time.Hour)
+	verifyCode := &db.EmailVerificationCode{
+		UserID:    dbAccount.ID.String(),
+		ExpiresAt: expirationTime,
+	}
+
+	// TODO: Transaction with creating User
+	err = a.dbHandler.Save(&verifyCode).Error
+	if err != nil {
+		efanlog.GetLogger().Infof("Failed to create email verification token")
+	} else {
+		go a.beanstalkHandler.ScheduleNewUserEmail(dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
 	}
 
 	// Empty JSON body with success status

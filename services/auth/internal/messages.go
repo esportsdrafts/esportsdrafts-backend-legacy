@@ -31,6 +31,13 @@ const resetEmailJobPriority = 1
 const defaultJobTTR = 30 * time.Second
 const defaultJobDelay = 0
 
+func CreateBeanstalkdClient(address, port string) *BeanstalkdClient {
+	return &BeanstalkdClient{
+		Address: address,
+		Port:    port,
+	}
+}
+
 // ScheduleNewUserEmail schedules a welcome email with email verification
 func (bc *BeanstalkdClient) ScheduleNewUserEmail(username string, email string, verificationCode string) (uint64, error) {
 	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", bc.Address, bc.Port))
@@ -38,6 +45,8 @@ func (bc *BeanstalkdClient) ScheduleNewUserEmail(username string, email string, 
 		efanlog.GetLogger().Errorf("Failed to schedule welcome email for user %s", username)
 		return 0, fmt.Errorf("Failed to schedule welcome email")
 	}
+
+	efanlog.GetLogger().Infof("Scheduling welcome email to %s (%s) with code %s", username, email, verificationCode)
 
 	emailJob := welcomeEmail{
 		BeanstalkdJob: BeanstalkdJob{

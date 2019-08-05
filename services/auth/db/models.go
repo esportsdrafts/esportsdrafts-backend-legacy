@@ -38,6 +38,6 @@ type Account struct {
 // Just use the built-in ID of the object as the verify code
 type EmailVerificationCode struct {
 	Base
-	UserID    string     `gorm:"varchar(36);not null;"`
-	ExpiresAt *time.Time `json:"expires_at"`
+	UserID    string    `gorm:"varchar(36);not null;"`
+	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
 }
