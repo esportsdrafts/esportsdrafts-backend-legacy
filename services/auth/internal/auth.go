@@ -112,27 +112,21 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	case "username+password":
 		var account db.Account
 
-		if !a.inputValidator.ValidateUsername(*newAuthClaim.Username) {
-			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
-		}
-
-		// Still in plain text at this point
-		if !a.inputValidator.ValidatePassword(*newAuthClaim.Password) {
-			return sendAuthAPIError(ctx, http.StatusUnprocessableEntity, "Invalid username or password")
-		}
-
 		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
 		if err != nil {
+			efanlog.GetLogger().Info("Username not found")
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
 		match, err := ComparePasswordAndHash(*newAuthClaim.Password, account.Password)
 		if err != nil {
+			efanlog.GetLogger().Info("Error hashing and comparing")
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 		}
 
 		if !match {
+			efanlog.GetLogger().Info("Username and password did not match")
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 

@@ -42,7 +42,7 @@ tests:  ## Run all unit tests and print coverage
 	go test ./... -v -cover
 
 integration-tests:  ## Run all integration tests, by default against local environment
-	python3.6 -m pytest --env $(ENVIRONMENT) -vx -s tests.tests
+	python3.6 -m pytest --env $(ENVIRONMENT) -vx -s tests/tests
 
 sec-scan:  ## Run security scan on all repos. Requires 'gosec' installed
 	gosec ./...

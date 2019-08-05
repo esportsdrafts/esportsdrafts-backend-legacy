@@ -1,5 +1,7 @@
 
 import uuid
+from random import choice
+from string import ascii_uppercase, ascii_lowercase
 from typing import Text
 
 import pytest
@@ -35,19 +37,24 @@ def env_url(env: Text) -> Text:
     return env_urls[env]
 
 
+def __gen_random_chars(n):
+    return ''.join(choice(ascii_uppercase + ascii_lowercase + '-_')
+                   for i in range(n))
+
+
 @pytest.fixture()
 def test_username() -> Text:
-    return 'test_user_' + str(uuid.uuid4())
+    return 'test_user_' + __gen_random_chars(14)
 
 
 @pytest.fixture()
 def test_email() -> Text:
-    return 'test_user_' + str(uuid.uuid4()) + '@test.nu'
+    return 'test_user_' + __gen_random_chars(14) + '@test.nu'
 
 
 @pytest.fixture()
 def test_password() -> Text:
-    return str(uuid.uuid4())
+    return __gen_random_chars(30)
 
 
 @pytest.fixture()
@@ -55,17 +62,12 @@ def user(api_env_url: Text,
          test_username: Text,
          test_password: Text,
          test_email: Text) -> User:
+    print(test_username)
     new_user = create_new_account(
         username=test_username,
         email=test_email,
         password=test_password,
-        url=api_env_url
+        url=api_env_url,
     )
+    new_user.login()
     return new_user
-
-
-@pytest.fixture()
-def authed_user(user):
-    user.login()
-    # TODO: Handle 2FA
-    return user
