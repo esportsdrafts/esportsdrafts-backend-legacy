@@ -4,7 +4,8 @@ Daily fantasy esport leagues.
 ## Developing
 
 **Requirements:**
-* Docker with Kubernetes enabled (or `Minikube` installed)
+* Docker
+* Minikube
 * Tilt (`brew tap windmilleng/tap && brew install windmilleng/tap/tilt`)
 * kubectl (`brew install kubectl`)
 * Python 3.6 (ONLY for integration tests)
@@ -13,6 +14,9 @@ Running a local dev environment:
 ```bash
 $ tilt up
 ```
+
+### Setting up your dev machine
+TODO
 
 ## Building
 

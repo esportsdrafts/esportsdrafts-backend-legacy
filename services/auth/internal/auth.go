@@ -215,18 +215,20 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 
 	// TODO: These queries can be in the same transaction
 	var count int
+	var usernameCheck db.Account
 
 	// Check if username is in use
 	// Count vs first? Maybe simplify by not creating a struct, string
 	// query instead.
-	a.dbHandler.Where(db.Account{Username: newUsername}).Count(&count)
+	a.dbHandler.Where("username = ?", newUsername).First(&usernameCheck).Count(&count)
 	if count != 0 {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
 
+	var emailCheck db.Account
 	// Check if email is in use
-	a.dbHandler.Where(db.Account{Email: newEmail}).Count(&count)
+	a.dbHandler.Where("email = ?", newEmail).First(&emailCheck).Count(&count)
 	if count != 0 {
 		// Information leak, someone could spam and figure out which emails
 		// are registered in the system.

@@ -1,8 +1,10 @@
 """User class and functions to CRUD users."""
 
-from typing import Text, List
+import time
+from typing import List, Text
 
 import requests
+from tests.common.utils import raise_on_error
 
 
 class User():
@@ -32,8 +34,7 @@ class User():
         if url.endswith('/'):
             self.url = url[:-1]
 
-        self.__signature_token = None
-        self.__payload_token = None
+        self.__auth_token = None
         self.__user_roles = []  # type: List[Text]
 
     def login(self):
@@ -43,27 +44,43 @@ class User():
             'password': self.password,
             'claim': 'username+password',
         }
-        res = requests.post(self.url + '/v1/auth/auth', json=payload)
-        res.raise_for_status()
+        res = requests.post(self.url + '/v1/auth/auth',
+                            json=payload, verify=False)
+        raise_on_error(res)
+
+        res_json = res.json()
+        self.__auth_token = res_json["access_token"]
+        self.__auth_expires_in = res_json["expires_in"]
 
     def logout(self):
         """Clear authentication for the user."""
         payload = {}
-        requests.post(self.url + '/v1/auth/logout', json=payload)
+        res = requests.post(self.url + '/v1/auth/auth',
+                            json=payload, verify=False)
+        raise_on_error(res)
 
     @property
     def is_authenticated(self) -> bool:
         """Indicate if the user is currently authenticated; otherwise False."""
-        if self.__signature_token is None or self.__payload_token is None:
+        if self.__auth_token is None or \
+                int(time.time()) > self.__auth_expires_in:
+            self.__auth_token = None
+            self.__auth_expires_in = None
             return False
-        res = requests.get(self.url + '/v1/user/me')
-        return res.status_code == 200
+
+        res = requests.get(self.url + '/v1/user/me', verify=False)
+        raise_on_error(res)
+
+        return True
+
+    def __str__(self):
+        return f'User(username={self.username}, email={self.email})'
 
 
 def create_new_account(username: Text,
                        email: Text,
                        password: Text,
-                       url: Text = 'https://api.efantasy.com') -> User:
+                       url: Text = 'https://api.efantasy.localhost') -> User:
     """
     Create a new user account and return a User object.
 
@@ -91,7 +108,7 @@ def create_new_account(username: Text,
         'password': password,
     }
 
-    res = requests.post(url + '/v1/auth/register', payload)
-    res.raise_for_status()
+    res = requests.post(url + '/v1/auth/register', json=payload, verify=False)
+    raise_on_error(res)
 
     return User(username, email, password, url)
