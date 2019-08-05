@@ -252,7 +252,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	expirationTime := time.Now().Add(48 * time.Hour)
 	verifyCode := &db.EmailVerificationCode{
 		UserID:    dbAccount.ID.String(),
-		ExpiresAt: expirationTime,
+		ExpiresAt: &expirationTime,
 	}
 
 	// TODO: Transaction with creating User

@@ -4,6 +4,5 @@ import (
 	"testing"
 )
 
-func TestDummy(t *testing.T) {
-
+func TestShouldSetCookie(t *testing.T) {
 }
