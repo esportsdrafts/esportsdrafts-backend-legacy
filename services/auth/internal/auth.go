@@ -220,6 +220,8 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
 
+	// Important to add new reference, otherwise the query will check
+	// if email + username match instead of only email
 	var emailCheck db.Account
 	// Check if email is in use
 	a.dbHandler.Where("email = ?", newEmail).First(&emailCheck).Count(&count)
