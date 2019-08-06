@@ -60,7 +60,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /v1/auth/verify:
+  /v1/auth/verifyemail:
     post:
       summary: Verify a user's email
       operationId: verify
@@ -72,12 +72,89 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VerificationCode'
+              $ref: '#/components/schemas/EmailVerification'
       responses:
         '200':
           description: Returned if verification was successful
         '404':
-          description: The provided verfication token was not found. Possibly expired.
+          description: The provided verfication token or user was not found. Token possibly expired.
+        default:
+          description: Unexpected error occured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /v1/auth/passwordreset/verify:
+    post:
+      summary: Submit a password reset verification
+      operationId: passwordresetverify
+      tags:
+        - auth
+      requestBody:
+        description: Requires the username and a token
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetVerify'
+      responses:
+        '200':
+          description: Returned if reset was successful
+        '400':
+          description: New password did not have a valid format
+        '404':
+          description: User does not exist or token not valid
+        default:
+          description: Unexpected error occured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /v1/auth/passwordreset/request:
+    post:
+      summary: Submit a password reset request
+      operationId: passwordresetrequest
+      tags:
+        - auth
+      requestBody:
+        description: Asks for email and password of the user
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Returned if reset was successful
+        '400':
+          description: New password did not have a valid format
+        '404':
+          description: User does not exist or token not valid
+        default:
+          description: Unexpected error occured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /v1/auth/check:
+    get:
+      summary: Check if parameter is valid/available
+      operationId: check
+      tags:
+        - auth
+      parameters:
+        - in: query
+          name: username
+          schema:
+            type: string
+          required: false
+          description: Check if username is available
+      responses:
+        '200':
+          description: Returned if reset was successful
+        '400':
+          description: Not available
         default:
           description: Unexpected error occured
           content:
@@ -105,29 +182,59 @@ components:
       properties:
         claim:
           type: string
-          enum: [username+password, 2fa, renew]
+          enum: [username+password, mfa, renew]
         code:
           type: string
         username:
           type: string
         password:
           type: string
+        mfa_code:
+          type: string
     JWT:
       required:
         - access_token
         - expires_in
+        - mfa_required
+        - mfa_type
       properties:
         access_token:
           type: string
-        id_token:
-          type: string
         expires_in:
           type: integer
-    VerificationCode:
+        mfa_required:
+          type: boolean
+        mfa_type:
+          type: string
+    EmailVerification:
       required:
+        - username
         - code
       properties:
+        username:
+          type: string
         code:
+          type: string
+    PasswordResetVerify:
+      required:
+        - username
+        - token
+        - password
+      properties:
+        username:
+          type: string
+        token:
+          type: string
+        password:
+          type: string
+    PasswordResetRequest:
+      required:
+        - username
+        - email
+      properties:
+        username:
+          type: string
+        email:
           type: string
     Error:
       required:

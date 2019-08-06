@@ -30,6 +30,7 @@ type Account struct {
 	Email                  string     `gorm:"varchar(100);not null;unique_index" json:"email"`
 	Password               string     `gorm:"column:password_hash;varchar(256);not null" json:"-"`
 	AcceptedTermsAt        *time.Time `json:"accepted_terms_at"`
+	MFA                    *MFAMethod `json:"mfa_method"`
 	EmailVerifiedAt        *time.Time `json:"email_verified_at"`
 	EmailVerificationCodes []EmailVerificationCode
 }
@@ -38,6 +39,22 @@ type Account struct {
 // Just use the built-in ID of the object as the verify code
 type EmailVerificationCode struct {
 	Base
-	UserID    string    `gorm:"varchar(36);not null;"`
+	UserID    string    `gorm:"varchar(36);not null;" json:"user_id"`
 	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
+}
+
+// MFACode is very similar to email verification codes. But we have explicit
+// code property since it needs to be a bit more human-readable compared to
+// UUID:s.
+type MFACode struct {
+	Base
+	UserID    string    `gorm:"varchar(36);not null;" json:"user_id"`
+	Code      string    `gorm:"varchar(10);not null;unique_index" json:"code"`
+	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
+}
+
+// MFAMethod denotes a MFA device type.
+type MFAMethod struct {
+	Base
+	Type string `gorm:"varchar(36);not null;" json:"type"`
 }
