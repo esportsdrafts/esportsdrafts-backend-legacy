@@ -62,17 +62,23 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 
 // TODO: Move this into a shared auth lib
 func hasRequestedWithHeader(ctx echo.Context) bool {
-	if ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest" {
-		return true
+	return ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest"
+}
+
+func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
+	headerContent := ctx.Request().Header.Get("Authorization")
+	headerContent = strings.TrimSpace(headerContent)
+	if strings.HasPrefix(headerContent, "Bearer") {
+		runes := []rune(headerContent)
+		if len(runes) < 7 {
+			return "", fmt.Errorf("Auth header not found")
+		}
+		return strings.TrimSpace(string(runes[6:])), nil
 	}
-	return false
+	return "", fmt.Errorf("Auth header not found")
 }
 
-func getAuthTokenFromHeader(ctx echo.Context) string {
-	return ctx.Request().Header.Get("Authentication")
-}
-
-func writeHeaderPayloadCookie(ctx echo.Context, header string) {
+func writeHeaderPayloadCookie(ctx echo.Context, header string, expiry time.Duration) {
 	cookie := new(http.Cookie)
 	cookie.Name = "header.payload"
 	cookie.Value = header
@@ -81,7 +87,7 @@ func writeHeaderPayloadCookie(ctx echo.Context, header string) {
 	cookie.Secure = true
 
 	// TODO: Make globally configurable
-	cookie.Expires = time.Now().Add(60 * time.Minute)
+	cookie.Expires = time.Now().Add(expiry)
 	ctx.SetCookie(cookie)
 }
 
@@ -99,9 +105,9 @@ func writeSignatureCookie(ctx echo.Context, signature string) {
 }
 
 // GenerateAuthToken generates a auth token with provided claims
-func GenerateAuthToken(claims *JWTClaims) (string, time.Time, error) {
+func GenerateAuthToken(claims *JWTClaims, expiry time.Duration) (string, time.Time, error) {
 	issuedTime := time.Now()
-	expirationTime := issuedTime.Add(60 * time.Minute)
+	expirationTime := issuedTime.Add(expiry)
 	claims.StandardClaims = jwt.StandardClaims{
 		// In JWT, the expiry time is expressed as unix milliseconds
 		ExpiresAt: expirationTime.Unix(),
@@ -156,7 +162,7 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			Roles: []string{"user"},
 		}
 
-		tokenString, expirationTime, err := GenerateAuthToken(claims)
+		tokenString, expirationTime, err := GenerateAuthToken(claims, 60*time.Minute)
 		if err != nil {
 			// If there is an error in creating the JWT return an internal server error
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
@@ -166,11 +172,12 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 
 		// Web client so set cookies instead of returning
 		if hasRequestedWithHeader(ctx) {
+			// This can be done more efficient by knowing exact indices of dots
 			parts := strings.Split(tokenString, ".")
 			signature := parts[2]
 			headerPayload := strings.Join(parts[0:2], ".")
 			writeSignatureCookie(ctx, signature)
-			writeHeaderPayloadCookie(ctx, headerPayload)
+			writeHeaderPayloadCookie(ctx, headerPayload, 60*time.Minute)
 			return ctx.JSON(http.StatusOK, result)
 		} else {
 			result.AccessToken = tokenString
@@ -234,7 +241,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 		// Information leak, someone could spam and figure out which emails
 		// are registered in the system.
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			fmt.Sprintf("The provided email is already registered"))
+			fmt.Sprint("The provided email is already registered"))
 	}
 
 	// Grab plain-text password, salt+hash it then save to DB
@@ -262,10 +269,9 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 		ExpiresAt: expirationTime,
 	}
 
-	// TODO: Transaction with creating User
 	err = a.dbHandler.Save(&verifyCode).Error
 	if err != nil {
-		efanlog.GetLogger().Infof("Failed to create email verification token")
+		efanlog.GetLogger().Info("Failed to create email verification token")
 	} else {
 		go a.beanstalkHandler.ScheduleNewUserEmail(dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
 	}
@@ -277,5 +283,32 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 // Verify takes a token and if it is associated with any user, mark the user's
 // email as 'verified'.
 func (a *AuthAPI) Verify(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, map[string]int{})
+}
+
+// Check takes a username and verifies if it is already registered or not.
+// Useful endpoint for frontend to do validation in registration form.
+func (a *AuthAPI) Check(ctx echo.Context, params auth.CheckParams) error {
+	var count int
+	var usernameCheck db.Account
+
+	if params.Username != nil {
+		a.dbHandler.Where("username = ?", params.Username).First(&usernameCheck).Count(&count)
+		if count == 0 {
+			return ctx.JSON(http.StatusOK, map[string]int{})
+		}
+	}
+	return ctx.JSON(http.StatusUnauthorized, map[string]int{})
+}
+
+// Passwordresetrequest initiates a password reset
+func (a *AuthAPI) Passwordresetrequest(ctx echo.Context) error {
+	return ctx.JSON(http.StatusOK, map[string]int{})
+}
+
+// Passwordresetverify takes username, token and a new password. If the token
+// matchs with the password reset request the password for the account is
+// changed to the supplied one in the request.
+func (a *AuthAPI) Passwordresetverify(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, map[string]int{})
 }
