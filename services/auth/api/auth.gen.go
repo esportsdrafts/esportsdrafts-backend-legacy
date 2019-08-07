@@ -11,6 +11,7 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"net/http"
 	"strings"
 )
 
@@ -25,8 +26,15 @@ type Account struct {
 type AuthClaim struct {
 	Claim    string  `json:"claim"`
 	Code     *string `json:"code,omitempty"`
+	MfaCode  *string `json:"mfa_code,omitempty"`
 	Password *string `json:"password,omitempty"`
 	Username *string `json:"username,omitempty"`
+}
+
+// EmailVerification defines model for EmailVerification.
+type EmailVerification struct {
+	Code     string `json:"code"`
+	Username string `json:"username"`
 }
 
 // Error defines model for Error.
@@ -37,32 +45,58 @@ type Error struct {
 
 // JWT defines model for JWT.
 type JWT struct {
-	AccessToken string  `json:"access_token"`
-	ExpiresIn   int     `json:"expires_in"`
-	IdToken     *string `json:"id_token,omitempty"`
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	MfaRequired bool   `json:"mfa_required"`
+	MfaType     string `json:"mfa_type"`
 }
 
-// VerificationCode defines model for VerificationCode.
-type VerificationCode struct {
-	Code string `json:"code"`
+// PasswordResetRequest defines model for PasswordResetRequest.
+type PasswordResetRequest struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+}
+
+// PasswordResetVerify defines model for PasswordResetVerify.
+type PasswordResetVerify struct {
+	Password string `json:"password"`
+	Token    string `json:"token"`
+	Username string `json:"username"`
+}
+
+// CheckParams defines parameters for Check.
+type CheckParams struct {
+	Username *string `json:"username,omitempty"`
 }
 
 // PerformAuthRequestBody defines body for PerformAuth for application/json ContentType.
 type PerformAuthJSONRequestBody AuthClaim
 
+// PasswordresetrequestRequestBody defines body for Passwordresetrequest for application/json ContentType.
+type PasswordresetrequestJSONRequestBody PasswordResetRequest
+
+// PasswordresetverifyRequestBody defines body for Passwordresetverify for application/json ContentType.
+type PasswordresetverifyJSONRequestBody PasswordResetVerify
+
 // CreateAccountRequestBody defines body for CreateAccount for application/json ContentType.
 type CreateAccountJSONRequestBody Account
 
 // VerifyRequestBody defines body for Verify for application/json ContentType.
-type VerifyJSONRequestBody VerificationCode
+type VerifyJSONRequestBody EmailVerification
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Authenticate a user returning a JWT for future operations and set session token for browsers// (POST /v1/auth/auth)
 	PerformAuth(ctx echo.Context) error
+	// Check if parameter is valid/available// (GET /v1/auth/check)
+	Check(ctx echo.Context, params CheckParams) error
+	// Submit a password reset request// (POST /v1/auth/passwordreset/request)
+	Passwordresetrequest(ctx echo.Context) error
+	// Submit a password reset verification// (POST /v1/auth/passwordreset/verify)
+	Passwordresetverify(ctx echo.Context) error
 	// Create a new account// (POST /v1/auth/register)
 	CreateAccount(ctx echo.Context) error
-	// Verify a user's email// (POST /v1/auth/verify)
+	// Verify a user's email// (POST /v1/auth/verifyemail)
 	Verify(ctx echo.Context) error
 }
 
@@ -77,6 +111,45 @@ func (w *ServerInterfaceWrapper) PerformAuth(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshalled arguments
 	err = w.Handler.PerformAuth(ctx)
+	return err
+}
+
+// Check converts echo context to params.
+func (w *ServerInterfaceWrapper) Check(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CheckParams
+	// ------------- Optional query parameter "username" -------------
+	if paramValue := ctx.QueryParam("username"); paramValue != "" {
+
+	}
+
+	err = runtime.BindQueryParameter("form", true, false, "username", ctx.QueryParams(), &params.Username)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter username: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.Check(ctx, params)
+	return err
+}
+
+// Passwordresetrequest converts echo context to params.
+func (w *ServerInterfaceWrapper) Passwordresetrequest(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.Passwordresetrequest(ctx)
+	return err
+}
+
+// Passwordresetverify converts echo context to params.
+func (w *ServerInterfaceWrapper) Passwordresetverify(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshalled arguments
+	err = w.Handler.Passwordresetverify(ctx)
 	return err
 }
 
@@ -106,28 +179,36 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 	}
 
 	router.POST("/v1/auth/auth", wrapper.PerformAuth)
+	router.GET("/v1/auth/check", wrapper.Check)
+	router.POST("/v1/auth/passwordreset/request", wrapper.Passwordresetrequest)
+	router.POST("/v1/auth/passwordreset/verify", wrapper.Passwordresetverify)
 	router.POST("/v1/auth/register", wrapper.CreateAccount)
-	router.POST("/v1/auth/verify", wrapper.Verify)
+	router.POST("/v1/auth/verifyemail", wrapper.Verify)
 
 }
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/7xWTW/jNhD9KwRboIc1/JHkpFPToC26p0Wbdg+LYMGII5tdiWRnhnaEhf97MaTiyGu5",
-	"cIHdXGxCJN+8mXnzpM+6Dl0MHjyTrj5rqjfQmby8reuQPMsyYoiA7CBvQGdcKwvuI+hKE6Pza72f6WiI",
-	"dgHt5GYiQG86mNjczzTCP8khWF19GAKMboyQH/YzfZt4c9ca151yq58fg0+dYD1jvDkgzPRVY7RE9LDT",
-	"D7NTpnWw8C3zKyQlk58RA05kMRBoAnaGdaWd5+srfaDqPMMaUKJ2QGTWlwQVzJfzEv3t+/vT2Kaugegj",
-	"h0/gJ/OEp+gQ6KMbb48YOXv28heUjkIdAQu7vwBd42rDLvi7oSDTZbog8Yf9PjfWU+rk8gdtYmwH9MXf",
-	"FLwowfkmZEDHrSDCL8azoV6ZxBs901tAcsHrSq/my/lSsg0RvIlOV/o6PxKR8CbTW2xXC7mYfzL7QHmc",
-	"JIcc+DerKx0Bpc+3JYQwB+Kfgu1Lip6hDOEJ4cO4yup7hEZX+rvFyzwvhmFevMxLroIFqtFFLpnIJnge",
-	"kFXWJinjbVkqa9jocUUZE+QSUwyeSieulsuvxlZUOcHz7fv73IYR1yKcfLIxqeWvRqGM5QSJ5OEpQs1g",
-	"FQxnZppS1xnsj2sJyihxBIXACb3za2WU5NAEVE3ihKAOOij1JmBFQHRILZ99xLAjQJLpN+siXZHKg4Q+",
-	"SAxh7YgBz8usRjAMz6b+f4UGT6aLLYzsv/z/uAnE4nrzOnRjn65kWPo/GJd+/e6GaLfM1vtiknp9013j",
-	"rytsV9fSwwulPPCfEnLZUhbYuJYu0OxK/qZBKGVvalLb9qqUzr6q0v70n3zY+UmZ3WU+yigPO2UOHf0P",
-	"eWzFS/vz4hj2v439nBj5RLrjM2p4VV1kOccwv+dhA6tco7ZjyJ2hUU+lkzfLm9P79xtQEcPWWbAC0BxZ",
-	"TUbxgVUTkrdz9S4Quce2V+XNZeevrJBjL1KhrpOU61gsubL94EY/kHr+uPpSLfJ5g8Gm+szrcXb0KGJ4",
-	"bKF7U96c+38DAAD//6rhJQpHCgAA",
+	"H4sIAAAAAAAC/+xYS28bNxD+KwRboIcs9Ih90qmu0RbNoQgcpzkYhjHanZVY75JrDilZMPTfiyH3JWnl",
+	"KKnj5tCLvSC58/jmm2+HepKpKSujUTuSsydJ6RJLCI8XaWq8dvxYWVOhdQrDBpagCn5wmwrlTJKzSi/k",
+	"NpEVEK2NzQY3PaHVUOLA5jaRFh+8spjJ2U3toPdGz/LtNpEX3i0vC1DlYWxps4zal2yrsfGmtZDIMgfJ",
+	"HjWu5W1yGGlqMhxMoczh7ujmCyUfM+A0f2UY/kKrcpWCU0YPpHssmNP99UAO1oJna4097i03tgQnZ1Jp",
+	"d/ZWtggq7XCBNiCFRLA4JV222Z1n7+8+XR/6hjRFojtn7lEPZoyPlbJId6q/3Y8oh7vOcXtibkyBoJsT",
+	"cfVzQe8Es+N6z0/PKGf2vqbIFRK6K3zwSF/UX19V1WjuwH0g1ubQ+7M0Pg7/V4XWANjr7m3oP02+5HBu",
+	"JFRVUdN//DcZzQ2rdG6CH+UKdoS/gXZAGwHeLWUiV2gptIucjiajCYdnKtRQKTmTZ2GJfbplSHi8mo75",
+	"xfAnIGBiVRiV4PiPTM5khZZ5fxFd2Fi8X0y2iZ2hHUatPAi4VVV++tFiLmfyh3Enu+Nac8edrAUUMqTU",
+	"qio2ftA81K62LIJKkACdxUeRgQPZB9pZjwF5qoymWNu3k8mLRctdOhDnu0/XoQy9WGOVw8kcfOFeLIQo",
+	"UwNBeI2PFaYOM4H1mUSSL0uwm10sUYBgQgqLzlut9EKA4BxyY0XunbcoWh5EvAmdICRqUwtn59asCS0x",
+	"q2ERqctUuWXXLcXSJab3nNYCBygWd5maFkp0bG1287SX2yUfEioXTR8JRQJWoAqYF9xULIDywaPdyETG",
+	"luz3XMeQHArCpIf1ft/eDtNnN56rABxmHJJlYRFrIEE+SGTuCy78+dCLfxrXi/s16fFxjx7CpKlnSHZp",
+	"0iLd1oOhXkGhsnEf8Gfq3QhbAGZse4o/rDH9483pbyM2g5+iId2hewoED5+R0ABNlMLkwi0xEPFU6Xkp",
+	"7uC6CyNTmdDGiSWsuJ1DgUQ9owQD54cGPnLPZwYpvImPipwwtu5nXgpWvkdWfvDzUjkBXf4RuY4uJ/Nx",
+	"1Y0An6djffgV2FhPJgMQXUWKUUu7oH/MSRDNLPE/Df9TGq7695VnuWhxocihPc6/1CI4bO6hX8o8fISy",
+	"KrA3Ucf/Py8NOSbOKDVlf/ic8eC4+eDsRC/enxOtJ+G22E22cnFentnfp7aYnnFNThzr6viHxDVuiQwd",
+	"qIJOYO/0kEONkY6vxUZE6F6bOffarPXgyHUZ4hEgNK4FtBV9hh5Rb9q70DBDvqkoHd6/B5Lu74v6Mvsv",
+	"JajfQoNKNCAk10sUlTUrlWHGBvKd4Zs1JUy5bI1lJTdeZyNxHTYrQ6TmxUbEe2w2+h71Jn4U6mn9JxLN",
+	"b0T7DNomfJ/NfHrk+pjsLFXWzAss38Sb5fafAAAA///zP8myDhMAAA==",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code

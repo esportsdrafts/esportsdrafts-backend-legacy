@@ -98,6 +98,24 @@ func writeSignatureCookie(ctx echo.Context, signature string) {
 	ctx.SetCookie(cookie)
 }
 
+// GenerateAuthToken generates a auth token with provided claims
+func GenerateAuthToken(claims *JWTClaims) (string, time.Time, error) {
+	issuedTime := time.Now()
+	expirationTime := issuedTime.Add(60 * time.Minute)
+	claims.StandardClaims = jwt.StandardClaims{
+		// In JWT, the expiry time is expressed as unix milliseconds
+		ExpiresAt: expirationTime.Unix(),
+		// Can be used to blacklist in the future. Needs to hold state
+		// in that case :/
+		Id:       uuid.NewV4().String(),
+		IssuedAt: issuedTime.Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	res, err := token.SignedString(jwtKey)
+	return res, expirationTime, err
+}
+
 // PerformAuth performs an authentication request the auth path is based on
 // what claim the caller makes.
 func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
@@ -130,32 +148,21 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
-		issuedTime := time.Now()
-		expirationTime := issuedTime.Add(60 * time.Minute)
-
 		// Create the JWT claims, which includes the username and expiry time
 		claims := &JWTClaims{
 			Username: account.Username,
 			UserID:   account.ID.String(),
 			// Would be something more useful depending on the user type
 			Roles: []string{"user"},
-			StandardClaims: jwt.StandardClaims{
-				// In JWT, the expiry time is expressed as unix milliseconds
-				ExpiresAt: expirationTime.Unix(),
-				// Can be used to blacklist in the future. Needs to hold state
-				// in that case :/
-				Id:       uuid.NewV4().String(),
-				IssuedAt: issuedTime.Unix(),
-			},
 		}
 
-		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-		tokenString, err := token.SignedString(jwtKey)
+		tokenString, expirationTime, err := GenerateAuthToken(claims)
 		if err != nil {
 			// If there is an error in creating the JWT return an internal server error
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 		}
+
+		result := auth.JWT{}
 
 		// Web client so set cookies instead of returning
 		if hasRequestedWithHeader(ctx) {
@@ -164,12 +171,10 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			headerPayload := strings.Join(parts[0:2], ".")
 			writeSignatureCookie(ctx, signature)
 			writeHeaderPayloadCookie(ctx, headerPayload)
-			return ctx.JSON(http.StatusOK, map[string]int{})
-		}
-
-		result := auth.JWT{
-			AccessToken: tokenString,
-			ExpiresIn:   int(expirationTime.Unix()),
+			return ctx.JSON(http.StatusOK, result)
+		} else {
+			result.AccessToken = tokenString
+			result.ExpiresIn = int(expirationTime.Unix())
 		}
 		// Otherwise just give token
 		return ctx.JSON(http.StatusOK, result)
@@ -252,7 +257,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	expirationTime := time.Now().Add(48 * time.Hour)
 	verifyCode := &db.EmailVerificationCode{
 		UserID:    dbAccount.ID.String(),
-		ExpiresAt: &expirationTime,
+		ExpiresAt: expirationTime,
 	}
 
 	// TODO: Transaction with creating User
