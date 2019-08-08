@@ -55,7 +55,7 @@ clean:  ## Clean up all Python cache files and Docker volumes, containers and ne
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 	rm -rf .pytest_cache .hypothesis .python-version .mypy_cache
 	@echo "$(BOLD)** Cleaning up Docker images and volumes...$(RESET)"
-	docker system prune -a -v
+	docker system prune -a
 
 help:  ## Print this make target help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage: make \033[36m<target>\033[0m\n\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
