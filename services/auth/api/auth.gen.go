@@ -25,15 +25,15 @@ type Account struct {
 // AuthClaim defines model for AuthClaim.
 type AuthClaim struct {
 	Claim    string  `json:"claim"`
-	Code     *string `json:"code,omitempty"`
 	MfaCode  *string `json:"mfa_code,omitempty"`
 	Password *string `json:"password,omitempty"`
+	Token    *string `json:"token,omitempty"`
 	Username *string `json:"username,omitempty"`
 }
 
 // EmailVerification defines model for EmailVerification.
 type EmailVerification struct {
-	Code     string `json:"code"`
+	Token    string `json:"token"`
 	Username string `json:"username"`
 }
 
@@ -190,25 +190,26 @@ func RegisterHandlers(router runtime.EchoRouter, si ServerInterface) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"EgAA",
 }
 
 // GetSwagger returns the Swagger specification corresponding to the generated code
