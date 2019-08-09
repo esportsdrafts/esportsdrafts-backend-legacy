@@ -220,14 +220,11 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	}
 
 	// TODO: These queries can be in the same transaction
-	var count int
 	var usernameCheck db.Account
 
 	// Check if username is in use
-	// Count vs first? Maybe simplify by not creating a struct, string
-	// query instead.
-	a.dbHandler.Where("username = ?", newUsername).First(&usernameCheck).Count(&count)
-	if count != 0 {
+	err = a.dbHandler.Where("username = ?", newUsername).First(&usernameCheck).Error
+	if err == nil {
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
 			fmt.Sprintf("Username '%s' already in use", newUsername))
 	}
@@ -236,8 +233,8 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	// if email + username match instead of only email
 	var emailCheck db.Account
 	// Check if email is in use
-	a.dbHandler.Where("email = ?", newEmail).First(&emailCheck).Count(&count)
-	if count != 0 {
+	err = a.dbHandler.Where("email = ?", newEmail).First(&emailCheck).Error
+	if err == nil {
 		// Information leak, someone could spam and figure out which emails
 		// are registered in the system.
 		return sendAuthAPIError(ctx, http.StatusBadRequest,
@@ -289,12 +286,11 @@ func (a *AuthAPI) Verify(ctx echo.Context) error {
 // Check takes a username and verifies if it is already registered or not.
 // Useful endpoint for frontend to do validation in registration form.
 func (a *AuthAPI) Check(ctx echo.Context, params auth.CheckParams) error {
-	var count int
 	var usernameCheck db.Account
 
 	if params.Username != nil {
-		a.dbHandler.Where("username = ?", params.Username).First(&usernameCheck).Count(&count)
-		if count == 0 {
+		err := a.dbHandler.Where("username = ?", params.Username).First(&usernameCheck).Error
+		if err != nil {
 			return ctx.JSON(http.StatusOK, map[string]int{})
 		}
 	}
