@@ -21,9 +21,15 @@ func main() {
 	var dbPassword = flag.String("db_password", "password", "DB password")
 	var beanstalkdAddr = flag.String("beanstalkd_address", "beanstalkd", "Beanstalkd address")
 	var beanstalkdPort = flag.String("beanstalkd_port", "11300", "Beanstalkd port")
+
+	var jwtKey = flag.String("jwt_key", "", "JWT signing key, needs to be same across cluster")
 	flag.Parse()
 
 	log := efanlog.GetLogger()
+
+	if *jwtKey == "" {
+		log.Fatal("'jwt_key' missing")
+	}
 
 	swagger, err := auth.GetSwagger()
 	if err != nil {
