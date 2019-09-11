@@ -15,16 +15,20 @@ GIT_HASH  		 = $(shell git rev-parse --verify HEAD)
 BOLD 			:= $(shell tput bold)
 RESET 			:= $(shell tput sgr0)
 
-.PHONY: services $(SERVICES) docker-base frontend watch tests integration-tests \
-	version clean help
+.PHONY: services $(SERVICES) docker-login docker-base frontend watch tests \
+	integration-tests version clean help
 
 .DEFAULT_GOAL := help
 
-services: $(SERVICES)  ## Build Docker image for all services
+services: docker-base $(SERVICES)  ## Build Docker image for all services
 $(SERVICES):
 	@echo "$(BOLD)** Building docker image for service '$@'...$(RESET)"
 	docker build -f ./services/$@/Dockerfile -t $(PROJECT_NAME)-$@:latest --build-arg VERSION=$(VERSION_LONG) ./services/$@
 	docker tag $(PROJECT_NAME)-$@:latest $(PROJECT_NAME)-$@:$(VERSION_LONG)
+
+docker-login: guard-GH_USERNAME guard-GH_TOKEN  ## Login to github docker registry using GH_USERNAME and GH_TOKEN
+	@echo "$(BOLD)Logging in to registry $(DOCKER_REGISTRY) ...$(RESET)"
+	@docker login docker.pkg.github.com --username ${GH_USERNAME} -p ${GH_TOKEN}
 
 docker-base:  ## Build the base image for all services
 	@echo "$(BOLD)** Building base image version ${VERSION_LONG}...$(RESET)"
@@ -60,3 +64,10 @@ clean:  ## Clean up all Python cache files and Docker volumes, containers and ne
 help:  ## Print this make target help message
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage: make \033[36m<target>\033[0m\n\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 	@printf "\n"
+
+guard-%: GUARD
+	@ if [ -z '${${*}}' ]; then echo 'Environment variable $(BOLD)$*$(RESET) not set.' && exit 1; fi
+
+# This crap protects against files being named the same as the target
+.PHONY: GUARD
+GUARD:
