@@ -1,4 +1,3 @@
-
 # General project settings
 PROJECT_NAME 		:= efantasy
 DOCKER_BASE_IMAGE 	:= $(PROJECT_NAME)-base

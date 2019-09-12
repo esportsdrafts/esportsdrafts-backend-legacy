@@ -8,9 +8,9 @@ import pytest
 from tests.common.user import User, create_new_account
 
 env_urls = {
-    'dev': 'dev.int.efantasy.com',
-    'stage': 'stage.int.efantasy.com',
-    'prod': 'efantasy.com',
+    'dev': 'api.dev.int.efantasy.com',
+    'stage': 'api.stage.int.efantasy.com',
+    'prod': 'api.efantasy.com',
     'local': 'efantasy.localhost',
 }
 

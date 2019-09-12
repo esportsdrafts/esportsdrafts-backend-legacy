@@ -1,7 +1,7 @@
 """User class and functions to CRUD users."""
 
 import time
-from typing import List, Text
+from typing import List, Text  # noqa
 
 import requests
 from tests.common.utils import raise_on_error
@@ -73,7 +73,10 @@ class User():
 
         return True
 
-    def __str__(self):
+    def __repr__(self):  # noqa
+        return self.__str__()
+
+    def __str__(self):  # noqa
         return f'User(username={self.username}, email={self.email})'
 
 

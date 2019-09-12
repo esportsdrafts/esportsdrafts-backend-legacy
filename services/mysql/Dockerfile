@@ -1,5 +1,5 @@
 
-FROM mariadb:10.3.16
+FROM docker.pkg.github.com/barreyo/efantasy/efantasy-mysql:27c1535
 
 ARG VERSION
 
