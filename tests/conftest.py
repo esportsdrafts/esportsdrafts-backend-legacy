@@ -1,5 +1,4 @@
 
-import uuid
 from random import choice
 from string import ascii_uppercase, ascii_lowercase
 from typing import Text
@@ -37,7 +36,7 @@ def env_url(env: Text) -> Text:
     return env_urls[env]
 
 
-def __gen_random_chars(n):
+def __gen_random_chars(n: int) -> Text:
     return ''.join(choice(ascii_uppercase + ascii_lowercase + '-_')
                    for i in range(n))
 
@@ -62,7 +61,6 @@ def user(api_env_url: Text,
          test_username: Text,
          test_password: Text,
          test_email: Text) -> User:
-    print(test_username)
     new_user = create_new_account(
         username=test_username,
         email=test_email,
