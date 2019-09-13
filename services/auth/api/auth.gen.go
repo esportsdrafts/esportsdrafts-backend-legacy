@@ -64,25 +64,40 @@ type PasswordResetVerify struct {
 	Username string `json:"username"`
 }
 
+// performAuthJSONBody defines parameters for PerformAuth.
+type performAuthJSONBody AuthClaim
+
 // CheckParams defines parameters for Check.
 type CheckParams struct {
 	Username *string `json:"username,omitempty"`
 }
 
+// passwordresetrequestJSONBody defines parameters for Passwordresetrequest.
+type passwordresetrequestJSONBody PasswordResetRequest
+
+// passwordresetverifyJSONBody defines parameters for Passwordresetverify.
+type passwordresetverifyJSONBody PasswordResetVerify
+
+// createAccountJSONBody defines parameters for CreateAccount.
+type createAccountJSONBody Account
+
+// verifyJSONBody defines parameters for Verify.
+type verifyJSONBody EmailVerification
+
 // PerformAuthRequestBody defines body for PerformAuth for application/json ContentType.
-type PerformAuthJSONRequestBody AuthClaim
+type PerformAuthJSONRequestBody performAuthJSONBody
 
 // PasswordresetrequestRequestBody defines body for Passwordresetrequest for application/json ContentType.
-type PasswordresetrequestJSONRequestBody PasswordResetRequest
+type PasswordresetrequestJSONRequestBody passwordresetrequestJSONBody
 
 // PasswordresetverifyRequestBody defines body for Passwordresetverify for application/json ContentType.
-type PasswordresetverifyJSONRequestBody PasswordResetVerify
+type PasswordresetverifyJSONRequestBody passwordresetverifyJSONBody
 
 // CreateAccountRequestBody defines body for CreateAccount for application/json ContentType.
-type CreateAccountJSONRequestBody Account
+type CreateAccountJSONRequestBody createAccountJSONBody
 
 // VerifyRequestBody defines body for Verify for application/json ContentType.
-type VerifyJSONRequestBody EmailVerification
+type VerifyJSONRequestBody verifyJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
