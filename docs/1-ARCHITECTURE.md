@@ -22,6 +22,7 @@ this pricipel should apply for any kind of processing that is
 not trivial allowing frontend API:s to respond instantly, and
 defer work to later.
 
+```
                                                                                Waiting to process
                                                                                    messages
 +---------------+                   +-----------------+                +-------------------------+
@@ -33,5 +34,5 @@ defer work to later.
                                                                           SendEmail | 
                                                                                     |
                                                                                     v
-
+```
 
