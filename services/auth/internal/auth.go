@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	beanstalkd_models "github.com/barreyo/efantasy/libs/beanstalkd/models"
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	auth "github.com/barreyo/efantasy/services/auth/api"
 	"github.com/barreyo/efantasy/services/auth/db"
@@ -33,12 +34,12 @@ type JWTClaims struct {
 // AuthAPI holds global handlers for the API like Databases.
 type AuthAPI struct {
 	dbHandler        *gorm.DB
-	beanstalkHandler *BeanstalkdClient
+	beanstalkHandler *beanstalkd_models.Client
 	inputValidator   InputValidator
 }
 
 // NewAuthAPI constructs an API client
-func NewAuthAPI(dbHandler *gorm.DB, bClient *BeanstalkdClient) *AuthAPI {
+func NewAuthAPI(dbHandler *gorm.DB, bClient *beanstalkd_models.Client) *AuthAPI {
 	return &AuthAPI{
 		dbHandler:        dbHandler,
 		beanstalkHandler: bClient,
@@ -177,12 +178,15 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			signature := parts[2]
 			headerPayload := strings.Join(parts[0:2], ".")
 			writeSignatureCookie(ctx, signature)
+
+			// TODO: Configure cookie timeout globally
 			writeHeaderPayloadCookie(ctx, headerPayload, 60*time.Minute)
-			return ctx.JSON(http.StatusOK, result)
-		} else {
-			result.AccessToken = tokenString
-			result.ExpiresIn = int(expirationTime.Unix())
+			return ctx.JSON(http.StatusOK, map[string]int{})
 		}
+
+		result.AccessToken = tokenString
+		result.ExpiresIn = int(expirationTime.Unix())
+
 		// Otherwise just give token
 		return ctx.JSON(http.StatusOK, result)
 	default:
@@ -270,7 +274,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	if err != nil {
 		efanlog.GetLogger().Info("Failed to create email verification token")
 	} else {
-		go a.beanstalkHandler.ScheduleNewUserEmail(dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
+		go ScheduleNewUserEmail(a.beanstalkHandler, dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
 	}
 
 	// Empty JSON body with success status

@@ -5,42 +5,19 @@ import (
 	"fmt"
 	"time"
 
+	beanstalkd_models "github.com/barreyo/efantasy/libs/beanstalkd/models"
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	"github.com/beanstalkd/go-beanstalk"
 )
-
-// TODO: These generic types, move to global library
-type BeanstalkdClient struct {
-	Address string
-	Port    string
-}
-
-type BeanstalkdJob struct {
-	JobType string `json:"job_type"`
-}
-
-type welcomeEmail struct {
-	BeanstalkdJob
-	Username         string `json:"username"`
-	Email            string `json:"email"`
-	VerificationCode string `json:"verification_code"`
-}
 
 const welcomeEmailJobPriority = 1
 const resetEmailJobPriority = 1
 const defaultJobTTR = 30 * time.Second
 const defaultJobDelay = 0
 
-func CreateBeanstalkdClient(address, port string) *BeanstalkdClient {
-	return &BeanstalkdClient{
-		Address: address,
-		Port:    port,
-	}
-}
-
 // ScheduleNewUserEmail schedules a welcome email with email verification
-func (bc *BeanstalkdClient) ScheduleNewUserEmail(username string, email string, verificationCode string) (uint64, error) {
-	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", bc.Address, bc.Port))
+func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, email string, verificationCode string) (uint64, error) {
+	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", client.Address, client.Port))
 	if err != nil {
 		efanlog.GetLogger().Errorf("Failed to schedule welcome email for user %s", username)
 		return 0, fmt.Errorf("Failed to schedule welcome email")
@@ -48,8 +25,8 @@ func (bc *BeanstalkdClient) ScheduleNewUserEmail(username string, email string, 
 
 	efanlog.GetLogger().Infof("Scheduling welcome email to %s (%s) with code %s", username, email, verificationCode)
 
-	emailJob := welcomeEmail{
-		BeanstalkdJob: BeanstalkdJob{
+	emailJob := beanstalkd_models.WelcomeEmail{
+		Job: beanstalkd_models.Job{
 			JobType: "welcome_email",
 		},
 		Username:         username,
@@ -72,6 +49,34 @@ func (bc *BeanstalkdClient) ScheduleNewUserEmail(username string, email string, 
 }
 
 // SchedulePasswordResetEmail schedules a password reset email
-func (bc *BeanstalkdClient) SchedulePasswordResetEmail(username string, email string, resetCode string) {
+func SchedulePasswordResetEmail(client *beanstalkd_models.Client, username string, email string, resetCode string) (uint64, error) {
+	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", client.Address, client.Port))
+	if err != nil {
+		efanlog.GetLogger().Errorf("Failed to schedule password reset email for user %s", username)
+		return 0, fmt.Errorf("Failed to schedule password reset email")
+	}
 
+	efanlog.GetLogger().Infof("Scheduling password reset email to %s (%s) with code %s", username, email, resetCode)
+
+	emailJob := beanstalkd_models.ResetPasswordEmail{
+		Job: beanstalkd_models.Job{
+			JobType: "reset_password_email",
+		},
+		Username:  username,
+		Email:     email,
+		ResetCode: resetCode,
+	}
+
+	marshalled, err := json.Marshal(emailJob)
+	if err != nil {
+		efanlog.GetLogger().Errorf("Failed to marshal reset password email job")
+		return 0, fmt.Errorf("Failed to schedule reset password email")
+	}
+
+	id, err := c.Put(marshalled, resetEmailJobPriority, defaultJobDelay, defaultJobTTR)
+	if err != nil {
+		return 0, fmt.Errorf("Failed to schedule reset password email")
+	}
+
+	return id, nil
 }
