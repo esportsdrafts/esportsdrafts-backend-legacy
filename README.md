@@ -8,7 +8,7 @@ Daily fantasy esport leagues.
 * Minikube
 * Tilt (`brew tap windmilleng/tap && brew install windmilleng/tap/tilt`)
 * kubectl (`brew install kubectl`)
-* Python 3.6 (ONLY for integration tests)
+* Python 3.6 (**Only** for integration tests)
 
 Running a local dev environment:
 ```bash
@@ -38,7 +38,7 @@ Docker is used for all building in the repo. To build a service run:
 $ make SERVICE_NAME
 ```
 Where `SERVICE_NAME` is replaced with the name of a directory in the `services`
-directory. For example building the auth services is a matter of running:
+directory. For example building the `auth` services is a matter of running:
 
 ```bash
 $ make auth

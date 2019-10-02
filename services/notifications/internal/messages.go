@@ -10,7 +10,7 @@ import (
 // RcvTimeout denotes time to wait for messages in seconds
 const RcvTimeout = 5
 
-func RunRecieveLoop() {
+func RunReceiveLoop() {
 	logger := efanlog.GetLogger()
 
 	c, err := beanstalk.Dial("tcp", "127.0.0.1:11300")

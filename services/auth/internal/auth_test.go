@@ -5,4 +5,5 @@ import (
 )
 
 func TestShouldSetCookie(t *testing.T) {
+
 }

@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	beanstalkd "github.com/barreyo/efantasy/libs/beanstalkd"
 	auth "github.com/barreyo/efantasy/services/auth/api"
 	"github.com/barreyo/efantasy/services/auth/db"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
-	beanstalkd "github.com/barreyo/efantasy/libs/beanstalkd"
 
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	"github.com/barreyo/efantasy/services/auth/internal"

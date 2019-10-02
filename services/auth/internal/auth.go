@@ -16,7 +16,13 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const defaultErrorMessage = "Authentication server error"
+const (
+	defaultErrorMessage = "Authentication server error"
+	maxUsernameLength   = 30
+	minUsernameLength   = 5
+	maxPasswordLength   = 128
+	minPasswordLength   = 12
+)
 
 // TODO: Fill from env variables and/or using KMS
 var jwtKey = []byte("my_secret_key")
@@ -44,10 +50,10 @@ func NewAuthAPI(dbHandler *gorm.DB, bClient *beanstalkd_models.Client) *AuthAPI 
 		dbHandler:        dbHandler,
 		beanstalkHandler: bClient,
 		inputValidator: &BasicValidator{
-			maxUsernameLength: 30,
-			minUsernameLength: 5,
-			maxPasswordLength: 128,
-			minPasswordLength: 12,
+			maxUsernameLength: maxUsernameLength,
+			minUsernameLength: minUsernameLength,
+			maxPasswordLength: maxPasswordLength,
+			minPasswordLength: minPasswordLength,
 		},
 	}
 }
@@ -86,8 +92,6 @@ func writeHeaderPayloadCookie(ctx echo.Context, header string, expiry time.Durat
 
 	// Protect from sending over HTTP
 	cookie.Secure = true
-
-	// TODO: Make globally configurable
 	cookie.Expires = time.Now().Add(expiry)
 	ctx.SetCookie(cookie)
 }

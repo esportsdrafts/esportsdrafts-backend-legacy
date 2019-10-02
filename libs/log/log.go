@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// GetLogger returns a configured logger
 func GetLogger() *logrus.Logger {
 	logger := logrus.New()
 	env := os.Getenv("ENV")
@@ -21,6 +22,10 @@ func GetLogger() *logrus.Logger {
 	return logger
 }
 
+// EchoLoggingMiddleware returns a logging middleware that handles selecting
+// appropriate format for the current context, JSON in production otherwise
+// colored and column formatting etc. Adds a bunch of Echo-specific logging
+// fields automatically.
 func EchoLoggingMiddleware() echo.MiddlewareFunc {
 	return loggingMiddleware()
 }

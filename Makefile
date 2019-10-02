@@ -25,7 +25,7 @@ $(SERVICES):
 	docker build -f ./services/$@/Dockerfile -t $(PROJECT_NAME)-$@:latest --build-arg VERSION=$(VERSION_LONG) ./services/$@
 	docker tag $(PROJECT_NAME)-$@:latest $(PROJECT_NAME)-$@:$(VERSION_LONG)
 
-docker-login: guard-GH_USERNAME guard-GH_TOKEN  ## Login to github docker registry using GH_USERNAME and GH_TOKEN
+docker-login: guard-GH_USERNAME guard-GH_TOKEN  ## Login to github docker registry using $GH_USERNAME and $GH_TOKEN
 	@echo "$(BOLD)Logging in to registry $(DOCKER_REGISTRY) ...$(RESET)"
 	@docker login docker.pkg.github.com --username ${GH_USERNAME} -p ${GH_TOKEN}
 
@@ -44,7 +44,7 @@ watch:  ## Start up a local development environment that watches and redeploys c
 tests:  ## Run all unit tests and print coverage
 	go test ./... -v -cover
 
-integration-tests:  ## Run all integration tests, by default against local environment
+integration-tests:  ## Run all integration tests, by default against local environment (configure via $ENVIRONMENT)
 	python3.6 -m pytest --env $(ENVIRONMENT) -vx -s tests/tests
 
 sec-scan:  ## Run security scan on all repos. Requires 'gosec' installed
@@ -67,6 +67,6 @@ help:  ## Print this make target help message
 guard-%: GUARD
 	@ if [ -z '${${*}}' ]; then echo 'Environment variable $(BOLD)$*$(RESET) not set.' && exit 1; fi
 
-# This crap protects against files being named the same as the target
+# This crap protects against files named the same as the target
 .PHONY: GUARD
 GUARD:
