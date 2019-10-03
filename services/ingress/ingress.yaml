@@ -14,21 +14,21 @@ metadata:
 spec:
   tls:
     - hosts:
-      - api.efantasy.localhost
-      - efantasy.localhost
+        - api.efantasy.localhost
+        - efantasy.localhost
       secretName: tls-certificate
   rules:
-  - host: efantasy.localhost
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: frontend
-          servicePort: 8000
-  - host: api.efantasy.localhost
-    http:
-      paths:
-      - path: /v1/auth
-        backend:
-          serviceName: auth
-          servicePort: 8000
+    - host: efantasy.localhost
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: frontend
+              servicePort: 8000
+    - host: api.efantasy.localhost
+      http:
+        paths:
+          - path: /v1/auth
+            backend:
+              serviceName: auth
+              servicePort: 8000

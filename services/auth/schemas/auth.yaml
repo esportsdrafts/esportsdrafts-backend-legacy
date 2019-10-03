@@ -20,13 +20,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Account'
+              $ref: "#/components/schemas/Account"
             example:
               username: g4m3rG1rl13
               email: email@hostname.com
               password: veryStr0ngP4ssw0rd
       responses:
-        '201':
+        "201":
           description: Account successfully created
         default:
           description: Unknown error
@@ -46,14 +46,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuthClaim'
+              $ref: "#/components/schemas/AuthClaim"
       responses:
-        '200':
+        "200":
           description: JWT authentication token
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JWT'
+                $ref: "#/components/schemas/JWT"
         default:
           description: unexpected error
           content:
@@ -72,11 +72,11 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/EmailVerification'
+              $ref: "#/components/schemas/EmailVerification"
       responses:
-        '200':
+        "200":
           description: Returned if verification was successful
-        '404':
+        "404":
           description: The provided verfication token or user was not found. Token possibly expired.
         default:
           description: Unexpected error occured
@@ -96,13 +96,13 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetVerify'
+              $ref: "#/components/schemas/PasswordResetVerify"
       responses:
-        '200':
+        "200":
           description: Returned if reset was successful
-        '400':
+        "400":
           description: New password did not have a valid format
-        '404':
+        "404":
           description: User does not exist or token not valid
         default:
           description: Unexpected error occured
@@ -122,9 +122,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PasswordResetRequest'
+              $ref: "#/components/schemas/PasswordResetRequest"
       responses:
-        '200':
+        "200":
           description: This endpoint always returns success, unless request format is invalid
         default:
           description: Unexpected error occured
@@ -147,9 +147,9 @@ paths:
           required: false
           description: Check if username is available
       responses:
-        '200':
+        "200":
           description: Returned if reset was successful
-        '400':
+        "400":
           description: Not available
         default:
           description: Unexpected error occured

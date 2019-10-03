@@ -174,8 +174,10 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 		}
 
 		result := auth.JWT{}
+		result.AccessToken = tokenString
+		result.ExpiresIn = int(expirationTime.Unix())
 
-		// Web client so set cookies instead of returning
+		// Web client so set cookies
 		if hasRequestedWithHeader(ctx) {
 			// This can be done more efficient by knowing exact indices of dots
 			parts := strings.Split(tokenString, ".")
@@ -185,11 +187,7 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 
 			// TODO: Configure cookie timeout globally
 			writeHeaderPayloadCookie(ctx, headerPayload, 60*time.Minute)
-			return ctx.JSON(http.StatusOK, map[string]int{})
 		}
-
-		result.AccessToken = tokenString
-		result.ExpiresIn = int(expirationTime.Unix())
 
 		// Otherwise just give token
 		return ctx.JSON(http.StatusOK, result)

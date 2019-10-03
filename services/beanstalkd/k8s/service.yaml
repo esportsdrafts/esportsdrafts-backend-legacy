@@ -4,7 +4,7 @@ metadata:
   name: beanstalkd
 spec:
   ports:
-  - port: 11300
+    - port: 11300
   selector:
     app: beanstalkd
   clusterIP: None

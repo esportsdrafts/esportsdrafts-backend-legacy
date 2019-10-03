@@ -14,9 +14,9 @@ spec:
         app: beanstalkd
     spec:
       containers:
-      - image: efantasy-beanstalkd
-        imagePullPolicy: IfNotPresent
-        name: beanstalkd
-        ports:
-        - containerPort: 11300
+        - image: efantasy-beanstalkd
+          imagePullPolicy: IfNotPresent
           name: beanstalkd
+          ports:
+            - containerPort: 11300
+              name: beanstalkd

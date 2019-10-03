@@ -10,60 +10,60 @@ apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: nginx-role
 rules:
-- apiGroups: [""]
-  resources: ["secrets", "configmaps", "services", "endpoints"]
-  verbs:
-    - get
-    - watch
-    - list
-    - proxy
-    - use
-    - redirect
-    - create
-    - update
-- apiGroups: [""]
-  resources: ["events"]
-  verbs:
-    - redirect
-    - patch
-    - post
-    - create
-- apiGroups: [""]
-  resources: ["pods", "nodes"]
-  verbs:
-    - list
-    - get
-    - watch
-- apiGroups:
-    - "extensions"
-  resources:
-    - "networking.k8s.io"
-  verbs:
-    - get
-    - watch
-    - list
-    - proxy
-    - use
-    - redirect
-    - update
-- apiGroups:
-    - "extensions"
-  resources:
-    - "ingresses/status"
-  verbs:
-    - get
-    - create
-    - update
-    - watch
-- apiGroups:
-    - "networking.k8s.io"
-  resources:
-    - "*"
-  verbs:
-    - get
-    - list
-    - update
-    - watch
+  - apiGroups: [""]
+    resources: ["secrets", "configmaps", "services", "endpoints"]
+    verbs:
+      - get
+      - watch
+      - list
+      - proxy
+      - use
+      - redirect
+      - create
+      - update
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs:
+      - redirect
+      - patch
+      - post
+      - create
+  - apiGroups: [""]
+    resources: ["pods", "nodes"]
+    verbs:
+      - list
+      - get
+      - watch
+  - apiGroups:
+      - "extensions"
+    resources:
+      - "networking.k8s.io"
+    verbs:
+      - get
+      - watch
+      - list
+      - proxy
+      - use
+      - redirect
+      - update
+  - apiGroups:
+      - "extensions"
+    resources:
+      - "ingresses/status"
+    verbs:
+      - get
+      - create
+      - update
+      - watch
+  - apiGroups:
+      - "networking.k8s.io"
+    resources:
+      - "*"
+    verbs:
+      - get
+      - list
+      - update
+      - watch
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -74,6 +74,6 @@ roleRef:
   kind: ClusterRole
   name: nginx-role
 subjects:
-- kind: ServiceAccount
-  name: nginx
-  namespace: default
+  - kind: ServiceAccount
+    name: nginx
+    namespace: default

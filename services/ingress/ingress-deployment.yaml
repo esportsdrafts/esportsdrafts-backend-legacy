@@ -51,4 +51,4 @@ spec:
       volumes:
         - name: tls-dhparam-vol
           secret:
-           secretName: tls-dhparam
+            secretName: tls-dhparam
