@@ -4,3 +4,4 @@ isort
 mypy
 pip-tools
 pylint
+yamllint

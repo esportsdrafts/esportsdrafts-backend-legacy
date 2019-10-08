@@ -10,8 +10,8 @@ import (
 	"github.com/beanstalkd/go-beanstalk"
 )
 
-// Priority 0 will be processed instantly(most urgent), higher priority will be
-// delayed in processing
+// Priority 0 will be processed instantly(most urgent), higher number will be
+// processed with less urgency
 const welcomeEmailJobPriority = 1024 * 5
 const resetEmailJobPriority = 1024 * 5
 const defaultJobTTR = 30 * time.Second

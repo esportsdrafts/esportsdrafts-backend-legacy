@@ -179,8 +179,13 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 
 		// Web client so set cookies
 		if hasRequestedWithHeader(ctx) {
-			// This can be done more efficient by knowing exact indices of dots
+			// This can be done more efficiently by knowing exact indices of dots
+			// Doing exact locations is more accurate and correct. A token should
+			// always be perfectly validated
 			parts := strings.Split(tokenString, ".")
+			if len(parts) != 3 {
+				return sendAuthAPIError(ctx, http.StatusInternalServerError, "Failed to generate auth token")
+			}
 			signature := parts[2]
 			headerPayload := strings.Join(parts[0:2], ".")
 			writeSignatureCookie(ctx, signature)
