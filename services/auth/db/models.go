@@ -3,6 +3,7 @@ package db
 import (
 	"time"
 
+	"database/sql/driver"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )
@@ -26,8 +27,8 @@ func (base *Base) BeforeCreate(scope *gorm.Scope) error {
 // stored in the `user` service.
 type Account struct {
 	Base
-	Username               string     `gorm:"varchar(100);not null;unique_index" json:"username"`
-	Email                  string     `gorm:"varchar(100);not null;unique_index" json:"email"`
+	Username               string     `gorm:"varchar(128);not null;unique_index" json:"username"`
+	Email                  string     `gorm:"varchar(256);not null;unique_index" json:"email"`
 	Password               string     `gorm:"column:password_hash;varchar(256);not null" json:"-"`
 	AcceptedTermsAt        *time.Time `json:"accepted_terms_at"`
 	MFA                    *MFAMethod `json:"mfa_method"`
@@ -53,8 +54,43 @@ type MFACode struct {
 	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
 }
 
+type mfaMethod string
+
+const (
+	email mfaMethod = "email"
+)
+
+func (p *mfaMethod) Scan(value interface{}) error {
+	*p = mfaMethod(value.([]byte))
+	return nil
+}
+
+func (p mfaMethod) Value() (driver.Value, error) {
+	return string(p), nil
+}
+
 // MFAMethod denotes a MFA device type.
 type MFAMethod struct {
 	Base
-	Type string `gorm:"varchar(36);not null;" json:"type"`
+	Type string `gorm:"type:ENUM('email');not null;" json:"type"`
+}
+
+func (a *Account) setMFAMethod(db *gorm.DB, method string) error {
+	return nil
+}
+
+func (a *Account) verifyEmail(db *gorm.DB) error {
+	timeNow := time.Now()
+	a.EmailVerifiedAt = &timeNow
+	err := db.Save(a).Error
+	if err != nil {
+		return err
+	}
+	// Ignore all errors here since deleting is not really important
+	db.Where("user_id = ?", a.ID).Delete(EmailVerificationCode{})
+	return nil
+}
+
+func (a *Account) isEmailVerified() bool {
+	return a.EmailVerifiedAt != nil
 }

@@ -259,11 +259,13 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
 
+	currentTime := time.Now()
 	// TODO: Encrypt all fields except UserID
 	dbAccount := &db.Account{
-		Username: newUsername,
-		Email:    newEmail,
-		Password: hashedPassword,
+		Username:        newUsername,
+		Email:           newEmail,
+		Password:        hashedPassword,
+		AcceptedTermsAt: &currentTime,
 	}
 
 	err = a.dbHandler.Save(&dbAccount).Error

@@ -20,7 +20,6 @@ func createDatabase(hostname string, user string, password string, dbname string
 	if err != nil {
 		panic(err)
 	}
-	db.Close()
 }
 
 // CreateDBHandler Creates a MySQL GORM driver
@@ -33,6 +32,6 @@ func CreateDBHandler(hostname string, user string, password string, dbname strin
 		return nil, err
 	}
 	db.LogMode(true)
-	db = db.AutoMigrate(Account{}, EmailVerificationCode{})
+	db = db.AutoMigrate(Account{}, EmailVerificationCode{}, MFACode{}, MFAMethod{})
 	return db, nil
 }
