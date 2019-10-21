@@ -316,7 +316,7 @@ func (a *AuthAPI) Passwordresetrequest(ctx echo.Context) error {
 }
 
 // Passwordresetverify takes username, token and a new password. If the token
-// matchs with the password reset request the password for the account is
+// matches with the password reset request the password for the account is
 // changed to the supplied one in the request.
 func (a *AuthAPI) Passwordresetverify(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, map[string]int{})
