@@ -17,6 +17,7 @@ func main() {
 
 	log := efanlog.GetLogger()
 	log.Info("Starting read loop")
-
-	internal.RunReceiveLoop()
+	for {
+		internal.RunReceiveLoop()
+	}
 }

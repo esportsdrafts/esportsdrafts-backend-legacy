@@ -1,5 +1,7 @@
 # -*- mode: Python -*-
 
+default_registry('docker.pkg.github.com/barreyo/efantasy')
+
 services_k8s_files = [
     # GENERAL/GLOBAL CONFIG
     'certs/k8s-secrets.yaml',
@@ -7,6 +9,10 @@ services_k8s_files = [
     # AUTH
     'services/auth/k8s/deployment.yaml',
     'services/auth/k8s/service.yaml',
+
+    # NOTIFICATIONS
+    'services/notifications/k8s/deployment.yaml',
+    'services/notifications/k8s/service.yaml',
 
     # INGRESS
     'services/ingress/roles.yaml',
@@ -45,6 +51,9 @@ docker_build('efantasy-mysql', 'services/mysql',
 
 docker_build('efantasy-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile')
+
+docker_build('efantasy-notifications', 'services/notifications',
+             dockerfile='services/notifications/Dockerfile')
 
 docker_build('efantasy-beanstalkd', 'services/beanstalkd',
              dockerfile='services/beanstalkd/Dockerfile')

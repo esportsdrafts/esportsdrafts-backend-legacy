@@ -13,7 +13,7 @@ const RcvTimeout = 5
 func RunReceiveLoop() {
 	logger := efanlog.GetLogger()
 
-	c, err := beanstalk.Dial("tcp", "127.0.0.1:11300")
+	c, err := beanstalk.Dial("tcp", "beanstalkd:11300")
 	if err != nil {
 		logger.Fatalf("Failed to connect to Beanstalkd, error: %s", err)
 	}
@@ -29,5 +29,7 @@ func RunReceiveLoop() {
 
 		logger.Infof("Received body: %s", body)
 		logger.Infof("Fetched job %d", id)
+
+		c.Delete(id)
 	}
 }
