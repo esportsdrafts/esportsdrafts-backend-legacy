@@ -77,7 +77,7 @@ func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	headerContent = strings.TrimSpace(headerContent)
 	if strings.HasPrefix(headerContent, "Bearer") {
 		runes := []rune(headerContent)
-		if len(runes) < 7 {
+		if len(runes) <= 7 {
 			return "", fmt.Errorf("Auth header not found")
 		}
 		return strings.TrimSpace(string(runes[6:])), nil
@@ -303,7 +303,7 @@ func (a *AuthAPI) Check(ctx echo.Context, params auth.CheckParams) error {
 
 	if params.Username != nil {
 		err := a.dbHandler.Where("username = ?", params.Username).First(&usernameCheck).Error
-		if err != nil {
+		if err == nil {
 			return ctx.JSON(http.StatusOK, map[string]int{})
 		}
 	}

@@ -75,18 +75,21 @@ func validUsernameString(name string, min int, max int) bool {
 
 // validPasswordString returns if password has correct length
 func validPasswordString(password string, min int, max int) bool {
+	runeLength := len([]rune(password))
+
 	// Arbitrary upper limit. Schrugz in security.
-	if len([]rune(password)) < min || len([]rune(password)) > max {
+	if runeLength < min || runeLength > max {
 		return false
 	}
 	return true
 }
 
+var /* const */ emailRegex = regexp.MustCompile(`^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`)
+
 // validEmailString returns true if string contains @ and a punctuation,
 // more validation than that will most likely be wrong and piss off users.
 func validEmailString(email string) bool {
-	var re = regexp.MustCompile(`^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`)
-	if len(re.FindStringIndex(email)) == 0 {
+	if len(emailRegex.FindStringIndex(email)) == 0 {
 		return false
 	}
 	return true
