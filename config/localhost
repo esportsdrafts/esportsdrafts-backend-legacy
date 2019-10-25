@@ -1,4 +1,4 @@
-SCOPE=local
+ENV=dev
 AUTH_SECRET=random_string_that_is_very_secret
 DB_USERNAME=root
 DB_PASSWORD=password

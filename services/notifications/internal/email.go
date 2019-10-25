@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
 	"github.com/matcornic/hermes/v2"
 	uuid "github.com/satori/go.uuid"
@@ -23,7 +24,19 @@ var /* const */ h = hermes.Hermes{
 	},
 }
 
-func SendWelcomeEmail(username string, userEmail string, code string) error {
+func writeLocalEmail(emailType, username, userEmail, emailBody string) error {
+	if _, err := os.Stat("/inbox"); os.IsNotExist(err) {
+		os.Mkdir("/inbox", os.ModeDir)
+	}
+	uuid := uuid.NewV4()
+	now := time.Now()
+	timeNow := now.Unix()
+	fileName := fmt.Sprintf("/inbox/%d_%s_%s_%s_%s.html", timeNow, emailType, username, userEmail, uuid.String())
+	return ioutil.WriteFile(fileName, []byte(emailBody), 0644)
+}
+
+// SendWelcomeEmail sends an email to the user
+func SendWelcomeEmail(username, userEmail, code string) error {
 	email := hermes.Email{
 		Body: hermes.Body{
 			Name: username,
@@ -55,12 +68,7 @@ func SendWelcomeEmail(username string, userEmail string, code string) error {
 	// Local dev environment cannot send emails anywhere so dump to fake inbox
 	// aka a file in a folder
 	if env == "DEVELOPMENT" || env == "DEV" {
-		if _, err := os.Stat("/inbox"); os.IsNotExist(err) {
-			os.Mkdir("/inbox", os.ModeDir)
-		}
-		uuid := uuid.NewV4()
-		fileName := fmt.Sprintf("/inbox/welcome_%s_%s_%s.html", username, userEmail, uuid.String())
-		return ioutil.WriteFile(fileName, []byte(emailBody), 0644)
+		return writeLocalEmail("welcome", username, userEmail, emailBody)
 	}
 
 	// TODO: Call email API to actually send out the email
@@ -74,6 +82,7 @@ func SendWelcomeEmail(username string, userEmail string, code string) error {
 	return nil
 }
 
+// SendWelcomeEmail sends an email to the user
 func SendResetPasswordEmail(username string, userEmail string, code string) error {
 	email := hermes.Email{
 		Body: hermes.Body{
@@ -108,12 +117,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 	// Local dev environment cannot send emails anywhere so dump to fake inbox
 	// aka a file in a folder
 	if env == "DEVELOPMENT" || env == "DEV" {
-		if _, err := os.Stat("/inbox"); os.IsNotExist(err) {
-			os.Mkdir("/inbox", os.ModeDir)
-		}
-		uuid := uuid.NewV4()
-		fileName := fmt.Sprintf("/inbox/reset_password_%s_%s_%s.html", username, userEmail, uuid.String())
-		return ioutil.WriteFile(fileName, []byte(emailBody), 0644)
+		return writeLocalEmail("reset_password", username, userEmail, emailBody)
 	}
 
 	// TODO: Call email API to actually send out the email
