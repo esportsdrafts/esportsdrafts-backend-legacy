@@ -3,12 +3,18 @@ package internal
 import (
 	"time"
 
+	"github.com/Jeffail/gabs/v2"
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	"github.com/beanstalkd/go-beanstalk"
 )
 
 // RcvTimeout denotes time to wait for messages in seconds
-const RcvTimeout = 5
+const (
+	RcvTimeout      = 5
+	ReleasePriority = 1024 * 5
+	ReleaseDelay    = 10 * time.Second
+	BuryPriority    = 1024
+)
 
 func RunReceiveLoop() {
 	logger := efanlog.GetLogger()
@@ -21,10 +27,36 @@ func RunReceiveLoop() {
 	for {
 		id, body, err := c.Reserve(RcvTimeout * time.Second)
 		if err != nil {
-			if _, ok := err.(beanstalk.ConnError); !ok {
-				continue
-			}
-			return
+			c.Release(id, ReleasePriority, ReleaseDelay)
+			continue
+		}
+
+		parsed, err := gabs.ParseJSON(body)
+		if err != nil {
+			logger.Warnf("Failed to parse message %d, with body: %s", id, body)
+			c.Release(id, ReleasePriority, ReleaseDelay)
+			continue
+		}
+
+		var jobType string
+		jobType, ok := parsed.Path("job_type").Data().(string)
+		if !ok {
+			logger.Warnf("Failed to parse message %d, with body: %s", id, body)
+			c.Release(id, ReleasePriority, ReleaseDelay)
+			continue
+		}
+
+		switch jobType {
+		case "welcome_email":
+			logger.Infof("Sending welcome email")
+			break
+		case "reset_password_email":
+			logger.Infof("Sending reset password email")
+			break
+		default:
+			logger.Infof("Burying job with id %d", id)
+			c.Bury(id, BuryPriority)
+			continue
 		}
 
 		logger.Infof("Received body: %s", body)

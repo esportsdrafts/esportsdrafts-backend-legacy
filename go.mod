@@ -3,6 +3,7 @@ module github.com/barreyo/efantasy
 go 1.12
 
 require (
+	github.com/Jeffail/gabs/v2 v2.1.0
 	github.com/beanstalkd/go-beanstalk v0.0.0-20190515041346-390b03b3064a
 	github.com/deepmap/oapi-codegen v1.3.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

@@ -1,6 +1,8 @@
+# github.com/Jeffail/gabs/v2 v2.1.0
+github.com/Jeffail/gabs/v2
 # github.com/beanstalkd/go-beanstalk v0.0.0-20190515041346-390b03b3064a
 github.com/beanstalkd/go-beanstalk
-# github.com/deepmap/oapi-codegen v1.2.5
+# github.com/deepmap/oapi-codegen v1.3.0
 github.com/deepmap/oapi-codegen/pkg/runtime
 github.com/deepmap/oapi-codegen/pkg/middleware
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -21,17 +23,17 @@ github.com/jinzhu/gorm/dialects/mysql
 github.com/jinzhu/inflection
 # github.com/konsorten/go-windows-terminal-sequences v1.0.1
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/labstack/echo/v4 v4.1.6
+# github.com/labstack/echo/v4 v4.1.11
 github.com/labstack/echo/v4
 github.com/labstack/echo/v4/middleware
-# github.com/labstack/gommon v0.2.9
+# github.com/labstack/gommon v0.3.0
 github.com/labstack/gommon/color
 github.com/labstack/gommon/log
 github.com/labstack/gommon/bytes
 github.com/labstack/gommon/random
-# github.com/mattn/go-colorable v0.1.2
+# github.com/mattn/go-colorable v0.1.4
 github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.8
+# github.com/mattn/go-isatty v0.0.10
 github.com/mattn/go-isatty
 # github.com/satori/go.uuid v1.2.0
 github.com/satori/go.uuid
@@ -39,16 +41,16 @@ github.com/satori/go.uuid
 github.com/sirupsen/logrus
 # github.com/valyala/bytebufferpool v1.0.0
 github.com/valyala/bytebufferpool
-# github.com/valyala/fasttemplate v1.0.1
+# github.com/valyala/fasttemplate v1.1.0
 github.com/valyala/fasttemplate
-# golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+# golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 golang.org/x/crypto/argon2
 golang.org/x/crypto/acme
 golang.org/x/crypto/acme/autocert
 golang.org/x/crypto/blake2b
-# golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
+# golang.org/x/net v0.0.0-20191011234655-491137f69257
 golang.org/x/net/idna
-# golang.org/x/sys v0.0.0-20190712062909-fae7ac547cb7
+# golang.org/x/sys v0.0.0-20191010194322-b09406accb47
 golang.org/x/sys/unix
 golang.org/x/sys/cpu
 # golang.org/x/text v0.3.2
@@ -58,5 +60,5 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/transform
 # google.golang.org/appengine v1.4.0
 google.golang.org/appengine/cloudsql
-# gopkg.in/yaml.v2 v2.2.2
+# gopkg.in/yaml.v2 v2.2.4
 gopkg.in/yaml.v2
