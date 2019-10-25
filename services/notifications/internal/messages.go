@@ -59,8 +59,7 @@ func RunReceiveLoop() {
 			continue
 		}
 
-		logger.Infof("Received body: %s", body)
-		logger.Infof("Fetched job %d", id)
+		logger.Infof("Finished job %d. Deleting from queue...", id)
 
 		c.Delete(id)
 	}

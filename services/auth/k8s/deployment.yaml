@@ -19,3 +19,16 @@ spec:
             - name: JWT_KEY
               value: "string_for_local_test_update_me"
 
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8086
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8086
+            periodSeconds: 5
+

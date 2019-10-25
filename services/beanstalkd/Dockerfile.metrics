@@ -1,0 +1,7 @@
+
+FROM docker.pkg.github.com/barreyo/efantasy/efantasy-beanstalkd-metrics:10-25-2019
+
+ARG VERSION="unknown"
+
+LABEL Name="efantasy-beanstalkd-metrics"
+LABEL Version=${VERSION}

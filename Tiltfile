@@ -27,7 +27,9 @@ services_k8s_files = [
     'services/mysql/k8s/service.yaml',
 
     # BEANSTALKD
-    'services/beanstalkd/k8s/deployment.yaml',
+    'services/beanstalkd/k8s/pdb.yaml',
+    'services/beanstalkd/k8s/pvc.yaml',
+    'services/beanstalkd/k8s/statefulset.yaml',
     'services/beanstalkd/k8s/service.yaml',
 
     # FRONTEND

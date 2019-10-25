@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: beanstalkd
+  labels:
+    app: beanstalkd
+spec:
+  serviceName: beanstalkd
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beanstalkd
+  template:
+    metadata:
+      labels:
+        app: beanstalkd
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "11301"
+    spec:
+      containers:
+      - name: beanstalkd
+        image: efantasy-beanstalkd
+        imagePullPolicy: IfNotPresent
+        args:
+        - -z 65535
+        ports:
+        - name: beanstalkd
+          containerPort: 11300
+        livenessProbe:
+          tcpSocket:
+            port: beanstalkd
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: beanstalkd
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        resources:
+          volumeMounts:
+            - name: binlog
+              mountPath: /var/lib/beanstalkd
+      - name: beanstalkd-metrics
+        image: docker.pkg.github.com/barreyo/efantasy/efantasy-beanstalkd-metrics:10-25-2019
+        imagePullPolicy: IfNotPresent
+        args:
+          - --web.listen-address=:11301
+          - --beanstalkd.address=beanstalkd:11300
+        ports:
+          - name: metrics
+            containerPort: 11301
+      volumes:
+        - name: binlog
+          persistentVolumeClaim:
+            claimName: beanstalkd

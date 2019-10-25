@@ -8,6 +8,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.3.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/getkin/kin-openapi v0.2.0
+	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/jinzhu/gorm v1.9.10
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/mattn/go-colorable v0.1.4 // indirect
