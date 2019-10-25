@@ -1,5 +1,5 @@
 
-FROM docker.pkg.github.com/barreyo/efantasy/efantasy-beanstalkd-metrics:10-25-2019
+FROM docker.pkg.github.com/barreyo/efantasy/efantasy-beanstalkd-metrics:338c5dd
 
 ARG VERSION="unknown"
 

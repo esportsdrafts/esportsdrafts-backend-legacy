@@ -11,6 +11,7 @@ require (
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/jinzhu/gorm v1.9.10
 	github.com/labstack/echo/v4 v4.1.11
+	github.com/matcornic/hermes/v2 v2.0.2
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect
 	github.com/satori/go.uuid v1.2.0

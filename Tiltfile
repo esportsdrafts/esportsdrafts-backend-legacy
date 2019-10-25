@@ -57,5 +57,8 @@ docker_build('efantasy-auth', 'services/auth',
 docker_build('efantasy-notifications', 'services/notifications',
              dockerfile='services/notifications/Dockerfile')
 
+docker_build('efantasy-beanstalkd-metrics', 'services/beanstalkd',
+             dockerfile='services/beanstalkd/Dockerfile.metrics')
+
 docker_build('efantasy-beanstalkd', 'services/beanstalkd',
              dockerfile='services/beanstalkd/Dockerfile')

@@ -26,9 +26,8 @@ func registerHealthChecks(user string, password string, hostname string) {
 	connParams := fmt.Sprintf("%s:%s@tcp(%s:3306)/", user, password, hostname)
 	db, _ := sql.Open("mysql", connParams)
 
-	// Our app is not ready if we can't connect to our database (`var db *sql.DB`) in <1s.
-	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 1*time.Second))
-	health.AddReadinessCheck("beanstalkd", healthcheck.TCPDialCheck("beanstalkd", 1*time.Second))
+	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 2*time.Second))
+	// health.AddReadinessCheck("beanstalkd", healthcheck.TCPDialCheck("beanstalkd", 2*time.Second))
 
 	go http.ListenAndServe("0.0.0.0:8086", health)
 }
