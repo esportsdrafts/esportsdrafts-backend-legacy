@@ -28,7 +28,7 @@ def raise_on_error(request: requests.Response) -> None:
 
 def gen_random_chars(n: int = 10) -> Text:
     """
-    Generate a string of random lower and uppercase ascii characters.
+    Generate a string of random lower ascii characters.
 
     Arguments:
     n -- number of characters to generate (default 10)
@@ -40,5 +40,5 @@ def gen_random_chars(n: int = 10) -> Text:
     if n < 1:
         raise Exception('Number of random chars to generate has to be > 0')
 
-    return ''.join(choice(ascii_uppercase + ascii_lowercase + '-_')
+    return ''.join(choice(ascii_lowercase + '-_')
                    for i in range(n))

@@ -26,7 +26,7 @@ class User():
         password -- User password as string
 
         """
-        self.username = username
+        self.username = username.lower()
         self.email = email
         self.password = password
         self.url = url

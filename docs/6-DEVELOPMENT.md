@@ -1,12 +1,12 @@
 # Development
-Local development depens on a few things. Install the requirements 
+Local development depens on a few things. Install the requirements
 below to get started. Rest of this document relies on them being
 installed.
 
 For `OS X` these can be installed via `brew`.
 
-**Requirements**: 
-* Go 
+**Requirements**:
+* Go
 * Docker
 * Minikube
 * kubectl
@@ -14,21 +14,33 @@ For `OS X` these can be installed via `brew`.
 * Python3.7
 
 ## Configuring Local Env
-To be written
+To be written.
+
+OS X:
+```
+$ sudo mkdir /Users/inbox
+$ sudo chmod 700 /Users/inbox
+```
+
+Linux:
+```
+$ sudo mkdir /home/inbox
+$ sudo chmod 700 /home/inbox
+```
 
 ## Committing Code
-The project follows a trunk-based development process, in other words the 
+The project follows a trunk-based development process, in other words the
 `master` branch should always be in a functional state and a release should
-be possible at any given time. To make changes, create a new branch off 
+be possible at any given time. To make changes, create a new branch off
 master, work on it and commit to the branch. When you are ready to get it
 into the main code, create `Pull Request` using the branch you have been
-working on and have someone review and approve it. When it has been 
+working on and have someone review and approve it. When it has been
 approved an all tests have passed you will be able to merge it into
 master.
 
 The codebase uses `semantic-release` to auto-generate version numbers.
 Which means there has to be a way for the tool to understand the impact
-of a commit. Therefore, the 
+of a commit. Therefore, the
 [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
 are used when writing your commit message.
 
@@ -47,6 +59,6 @@ can generate the stubs using `oapi-gen`. The Makefile should have a
 target that can do this, just remember to rename any naming variables
 to match your new service.
 
-TODO: Make a small utility that creates the boilerplate structure 
+TODO: Make a small utility that creates the boilerplate structure
 given a name of a new service.
 

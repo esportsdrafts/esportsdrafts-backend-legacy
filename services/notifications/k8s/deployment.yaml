@@ -30,5 +30,7 @@ spec:
       volumes:
         - name: local-testing-inbox
           hostPath:
-            path: /tmp/inbox
+            # TODO: This will only support OS X right now
+            # Linux needs to mount /home/inbox
+            path: /Users/inbox
 
