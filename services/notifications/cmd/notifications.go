@@ -3,12 +3,15 @@ package main
 import (
 	// "flag"
 	"net/http"
+	"os"
 	"time"
 
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	internal "github.com/barreyo/efantasy/services/notifications/internal"
 	"github.com/heptiolabs/healthcheck"
 )
+
+var /* const */ env = os.Getenv("ENV")
 
 func registerHealthChecks() {
 	health := healthcheck.NewHandler()
@@ -26,6 +29,7 @@ func main() {
 	// flag.Parse()
 
 	log := efanlog.GetLogger()
+	log.Infof("Running in env: %s", env)
 
 	log.Info("Registering health checks")
 	registerHealthChecks()

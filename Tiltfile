@@ -5,6 +5,7 @@ default_registry('docker.pkg.github.com/barreyo/efantasy')
 services_k8s_files = [
     # GENERAL/GLOBAL CONFIG
     'certs/k8s-secrets.yaml',
+    'config/configmaps/dev.yaml',
 
     # AUTH
     'services/auth/k8s/deployment.yaml',

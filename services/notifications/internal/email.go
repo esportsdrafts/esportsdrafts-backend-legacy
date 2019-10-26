@@ -67,7 +67,7 @@ func SendWelcomeEmail(username, userEmail, code string) error {
 
 	// Local dev environment cannot send emails anywhere so dump to fake inbox
 	// aka a file in a folder
-	if env == "DEVELOPMENT" || env == "DEV" {
+	if env == "development" || env == "dev" {
 		return writeLocalEmail("welcome", username, userEmail, emailBody)
 	}
 
@@ -82,7 +82,7 @@ func SendWelcomeEmail(username, userEmail, code string) error {
 	return nil
 }
 
-// SendWelcomeEmail sends an email to the user
+// SendResetPasswordEmail sends an email to the user
 func SendResetPasswordEmail(username string, userEmail string, code string) error {
 	email := hermes.Email{
 		Body: hermes.Body{
@@ -116,7 +116,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 
 	// Local dev environment cannot send emails anywhere so dump to fake inbox
 	// aka a file in a folder
-	if env == "DEVELOPMENT" || env == "DEV" {
+	if env == "development" || env == "dev" {
 		return writeLocalEmail("reset_password", username, userEmail, emailBody)
 	}
 

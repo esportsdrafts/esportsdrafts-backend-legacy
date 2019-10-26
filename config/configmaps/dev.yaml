@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  ENV: dev
+  BASE_URL: efantasy.dev
+  BEANSTALKD_ADDR: beanstalkd
+  BEANSTALKD_PORT: "11300"
+  DB_HOSTNAME: mysql

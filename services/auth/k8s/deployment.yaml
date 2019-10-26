@@ -15,9 +15,15 @@ spec:
           name: auth
           ports:
             - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: config
           env:
-            - name: JWT_KEY
-              value: "string_for_local_test_update_me"
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: ENV
 
           livenessProbe:
             httpGet:

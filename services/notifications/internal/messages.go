@@ -24,6 +24,7 @@ func RunReceiveLoop() {
 	c, err := beanstalk.Dial("tcp", "beanstalkd:11300")
 	if err != nil {
 		logger.Fatalf("Failed to connect to Beanstalkd, error: %s", err)
+		return
 	}
 
 	for {
