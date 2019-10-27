@@ -12,10 +12,12 @@ import (
 
 // Priority 0 will be processed instantly(most urgent), higher number will be
 // processed with less urgency
-const welcomeEmailJobPriority = 1024 * 5
-const resetEmailJobPriority = 1024 * 5
-const defaultJobTTR = 30 * time.Second
-const defaultJobDelay = 0
+const (
+	welcomeEmailJobPriority = 1024 * 5
+	resetEmailJobPriority   = 1024 * 5
+	defaultJobTTR           = 30 * time.Second
+	defaultJobDelay         = 0
+)
 
 // ScheduleNewUserEmail schedules a welcome email with email verification
 func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, email string, verificationCode string) (uint64, error) {

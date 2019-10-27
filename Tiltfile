@@ -6,6 +6,7 @@ services_k8s_files = [
     # GENERAL/GLOBAL CONFIG
     'certs/k8s-secrets.yaml',
     'config/configmaps/dev.yaml',
+    'config/secrets/dev-auth.yaml',
 
     # AUTH
     'services/auth/k8s/deployment.yaml',
@@ -41,6 +42,9 @@ services_k8s_files = [
 # Kubernetes YAML config files
 k8s_yaml(services_k8s_files)
 
+go_ignores = ['tests', 'certs', 'docs', 'Dockerfile.testing', 'README.md',
+              'requirements-dev.txt', 'requirements.in', 'requirements.txt']
+
 # Frontend is an edge-case since it lives in a seperate repo
 docker_build('efantasy-frontend', '../efantasy-frontend/',
              dockerfile='../efantasy-frontend/Dockerfile')
@@ -53,10 +57,12 @@ docker_build('efantasy-mysql', 'services/mysql',
              dockerfile='services/mysql/Dockerfile')
 
 docker_build('efantasy-auth', 'services/auth',
-             dockerfile='services/auth/Dockerfile')
+             dockerfile='services/auth/Dockerfile',
+             ignore=go_ignores)
 
 docker_build('efantasy-notifications', 'services/notifications',
-             dockerfile='services/notifications/Dockerfile')
+             dockerfile='services/notifications/Dockerfile',
+             ignore=go_ignores)
 
 docker_build('efantasy-beanstalkd-metrics', 'services/beanstalkd',
              dockerfile='services/beanstalkd/Dockerfile.metrics')

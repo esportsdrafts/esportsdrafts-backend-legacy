@@ -24,6 +24,11 @@ spec:
                 configMapKeyRef:
                   name: config
                   key: ENV
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: auth
+                  key: jwt_key
 
           livenessProbe:
             httpGet:

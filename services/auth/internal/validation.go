@@ -20,6 +20,8 @@ type BasicValidator struct {
 	maxPasswordLength, minPasswordLength int
 }
 
+var /* const */ emailRegex = regexp.MustCompile(`^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`)
+
 // GetDefaultValidator creates a Validator with sane defaults.
 func GetDefaultValidator() BasicValidator {
 	return BasicValidator{
@@ -83,8 +85,6 @@ func validPasswordString(password string, min int, max int) bool {
 	}
 	return true
 }
-
-var /* const */ emailRegex = regexp.MustCompile(`^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$`)
 
 // validEmailString returns true if string contains @ and a punctuation,
 // more validation than that will most likely be wrong and piss off users.

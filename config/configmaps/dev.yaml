@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: config
 data:
-  ENV: dev
+  ENV: local
   BASE_URL: efantasy.dev
   BEANSTALKD_ADDR: beanstalkd
   BEANSTALKD_PORT: "11300"

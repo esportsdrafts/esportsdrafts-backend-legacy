@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	beanstalkd "github.com/barreyo/efantasy/libs/beanstalkd"
@@ -39,14 +40,13 @@ func main() {
 	var dbPassword = flag.String("db_password", "password", "DB password")
 	var beanstalkdAddr = flag.String("beanstalkd_address", "beanstalkd", "Beanstalkd address")
 	var beanstalkdPort = flag.String("beanstalkd_port", "11300", "Beanstalkd port")
-
-	var jwtKey = flag.String("jwt_key", "", "JWT signing key, needs to be same across cluster")
 	flag.Parse()
 
+	jwtKey := os.Getenv("JWT_KEY")
 	log := efanlog.GetLogger()
 
-	if *jwtKey == "" {
-		log.Fatal("'jwt_key' missing")
+	if jwtKey == "" {
+		log.Fatal("'JWT_KEY' not found in environment")
 	}
 
 	swagger, err := auth.GetSwagger()
@@ -62,7 +62,7 @@ func main() {
 	defer dbHandler.Close()
 
 	beanstalkClient := beanstalkd.CreateBeanstalkdClient(*beanstalkdAddr, *beanstalkdPort)
-	authAPI := internal.NewAuthAPI(dbHandler, beanstalkClient)
+	authAPI := internal.NewAuthAPI(dbHandler, beanstalkClient, []byte(jwtKey))
 
 	// TODO: Attach more middlewares and move to global lib for easy use
 	e := echo.New()

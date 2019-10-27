@@ -79,6 +79,8 @@ class User():
     def __str__(self):  # noqa
         return f'User(username={self.username}, email={self.email})'
 
+# TODO: Move all below to api_client class
+
 
 def create_new_account(username: Text,
                        email: Text,
@@ -115,3 +117,15 @@ def create_new_account(username: Text,
     raise_on_error(res)
 
     return User(username, email, password, url)
+
+
+def verify_email():
+    pass
+
+
+def reset_password():
+    pass
+
+
+def verify_password_reset():
+    pass

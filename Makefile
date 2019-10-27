@@ -57,6 +57,8 @@ clean:  ## Clean up all Python cache files and Docker volumes, containers and ne
 	@echo "$(BOLD)** Cleaning up Python files...$(RESET)"
 	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 	rm -rf .pytest_cache .hypothesis .python-version .mypy_cache
+	@echo "$(BOLD)**Clear out /Users/inbox/...$(RESET)"
+	rm -rf /Users/inbox/*
 	@echo "$(BOLD)** Cleaning up Docker images and volumes...$(RESET)"
 	docker system prune -a
 

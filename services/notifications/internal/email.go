@@ -70,7 +70,7 @@ func SendWelcomeEmail(username, userEmail, code string) error {
 
 	// Local dev environment cannot send emails anywhere so dump to fake inbox
 	// aka a file in a folder
-	if env == "development" || env == "dev" {
+	if env == "local" {
 		return writeLocalEmail("welcome", username, emailBody)
 	}
 
@@ -119,7 +119,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 
 	// Local dev environment cannot send emails anywhere so dump to fake inbox
 	// aka a file in a folder
-	if env == "development" || env == "dev" {
+	if env == "local" {
 		return writeLocalEmail("reset_password", username, emailBody)
 	}
 

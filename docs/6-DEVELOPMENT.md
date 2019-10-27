@@ -16,16 +16,19 @@ For `OS X` these can be installed via `brew`.
 ## Configuring Local Env
 To be written.
 
+Set up 'inbox' for local email testing. Details
+`https://minikube.sigs.k8s.io/docs/tasks/mount/`.
+
 OS X:
-```
+```bash
 $ sudo mkdir /Users/inbox
-$ sudo chmod 700 /Users/inbox
+$ sudo chmod 666 /Users/inbox
 ```
 
 Linux:
-```
+```bash
 $ sudo mkdir /home/inbox
-$ sudo chmod 700 /home/inbox
+$ sudo chmod 666 /home/inbox
 ```
 
 ## Committing Code

@@ -21,4 +21,4 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt \
 COPY --from=builder /app /app
 
 # TODO: Configure app through env variables for more flexibility in k8s
-CMD ["/app", "-port", "8000", "-jwt_key", "${JWT_KEY}"]
+CMD ["/app", "-port", "8000"]
