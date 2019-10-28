@@ -61,7 +61,7 @@ func loggingMiddleware() echo.MiddlewareFunc {
 
 			// TODO: Add userID from auth token
 			logger.WithFields(logrus.Fields{
-				"id":            requestID,
+				"request_id":    requestID,
 				"remote_ip":     c.RealIP(),
 				"user_agent":    req.UserAgent(),
 				"status":        res.Status,
