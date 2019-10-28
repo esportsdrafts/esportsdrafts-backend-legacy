@@ -24,9 +24,6 @@ const (
 	minPasswordLength   = 12
 )
 
-// TODO: Fill from env variables and/or using KMS
-var jwtKey = []byte("my_secret_key")
-
 // JWTClaims holds eFantasy auth claims. Roles array denotes what the user
 // can do within the application. For example and 'admin' would have elevated
 // access compared to a 'user'.
@@ -42,10 +39,11 @@ type AuthAPI struct {
 	dbHandler        *gorm.DB
 	beanstalkHandler *beanstalkd_models.Client
 	inputValidator   InputValidator
+	jwtKey           []byte
 }
 
 // NewAuthAPI constructs an API client
-func NewAuthAPI(dbHandler *gorm.DB, bClient *beanstalkd_models.Client) *AuthAPI {
+func NewAuthAPI(dbHandler *gorm.DB, bClient *beanstalkd_models.Client, jwtKey []byte) *AuthAPI {
 	return &AuthAPI{
 		dbHandler:        dbHandler,
 		beanstalkHandler: bClient,
@@ -55,6 +53,7 @@ func NewAuthAPI(dbHandler *gorm.DB, bClient *beanstalkd_models.Client) *AuthAPI 
 			maxPasswordLength: maxPasswordLength,
 			minPasswordLength: minPasswordLength,
 		},
+		jwtKey: jwtKey,
 	}
 }
 
@@ -110,7 +109,7 @@ func writeSignatureCookie(ctx echo.Context, signature string) {
 }
 
 // GenerateAuthToken generates a auth token with provided claims
-func GenerateAuthToken(claims *JWTClaims, expiry time.Duration) (string, time.Time, error) {
+func GenerateAuthToken(claims *JWTClaims, expiry time.Duration, jwtKey []byte) (string, time.Time, error) {
 	issuedTime := time.Now()
 	expirationTime := issuedTime.Add(expiry)
 	claims.StandardClaims = jwt.StandardClaims{
@@ -136,6 +135,7 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
 	}
+	logger := efanlog.GetLogger()
 
 	switch newAuthClaim.Claim {
 	case "username+password":
@@ -144,18 +144,18 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
 		if err != nil {
-			efanlog.GetLogger().Info("Username not found")
+			logger.Info("Username not found")
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
 		match, err := ComparePasswordAndHash(*newAuthClaim.Password, account.Password)
 		if err != nil {
-			efanlog.GetLogger().Info("Error hashing and comparing")
+			logger.Info("Error hashing and comparing")
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 		}
 
 		if !match {
-			efanlog.GetLogger().Info("Username and password did not match")
+			logger.Info("Username and password did not match")
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
@@ -167,8 +167,9 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			Roles: []string{"user"},
 		}
 
-		tokenString, expirationTime, err := GenerateAuthToken(claims, 60*time.Minute)
+		tokenString, expirationTime, err := GenerateAuthToken(claims, 60*time.Minute, a.jwtKey)
 		if err != nil {
+			logger.Info(err)
 			// If there is an error in creating the JWT return an internal server error
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 		}
@@ -232,7 +233,6 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 
 	// TODO: These queries can be in the same transaction
 	var usernameCheck db.Account
-
 	// Check if username is in use
 	err = a.dbHandler.Where("username = ?", newUsername).First(&usernameCheck).Error
 	if err == nil {
@@ -282,9 +282,9 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 	err = a.dbHandler.Save(&verifyCode).Error
 	if err != nil {
 		efanlog.GetLogger().Info("Failed to create email verification token")
-	} else {
-		go ScheduleNewUserEmail(a.beanstalkHandler, dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 	}
+	go ScheduleNewUserEmail(a.beanstalkHandler, dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
 
 	// Empty JSON body with success status
 	return ctx.JSON(http.StatusCreated, map[string]int{})
@@ -293,6 +293,43 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 // Verify takes a token and if it is associated with any user, mark the user's
 // email as 'verified'.
 func (a *AuthAPI) Verify(ctx echo.Context) error {
+	var request auth.EmailVerification
+	err := ctx.Bind(&request)
+
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
+	}
+
+	var account db.Account
+	err = a.dbHandler.Preload("EmailVerificationCodes").Where("username = ?", request.Username).First(&account).Error
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "User not found")
+	}
+
+	if account.IsEmailVerified() {
+		return ctx.JSON(http.StatusOK, map[string]int{})
+	}
+
+	codeFound := false
+	var token db.EmailVerificationCode
+	for _, v := range account.EmailVerificationCodes {
+		if v.ID.String() == request.Token {
+			codeFound = true
+			token = v
+			break
+		}
+	}
+
+	if !codeFound {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid token")
+	}
+
+	if token.ExpiresAt.Before(time.Now()) {
+		a.dbHandler.Delete(&token)
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Token has expired")
+	}
+
+	account.VerifyEmail(a.dbHandler)
 	return ctx.JSON(http.StatusOK, map[string]int{})
 }
 

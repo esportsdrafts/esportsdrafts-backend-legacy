@@ -13,5 +13,24 @@ spec:
       containers:
         - image: efantasy-notifications
           name: notifications
+          env:
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: ENV
+          envFrom:
+            - configMapRef:
+                name: config
           ports:
             - containerPort: 8000
+          volumeMounts:
+            - name: local-testing-inbox
+              mountPath: /inbox
+      volumes:
+        - name: local-testing-inbox
+          hostPath:
+            # TODO: This will only support OS X right now
+            # Linux needs to mount /home/inbox
+            path: /Users/inbox
+

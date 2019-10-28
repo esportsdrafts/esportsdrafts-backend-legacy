@@ -40,7 +40,7 @@ type Account struct {
 // Just use the built-in ID of the object as the verify code
 type EmailVerificationCode struct {
 	Base
-	UserID    string    `gorm:"varchar(36);not null;" json:"user_id"`
+	UserID    string    `gorm:"varchar(36);not null;index;" json:"user_id"`
 	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
 }
 
@@ -75,11 +75,11 @@ type MFAMethod struct {
 	Type string `gorm:"type:ENUM('email');not null;" json:"type"`
 }
 
-func (a *Account) setMFAMethod(db *gorm.DB, method string) error {
+func (a *Account) SetMFAMethod(db *gorm.DB, method string) error {
 	return nil
 }
 
-func (a *Account) verifyEmail(db *gorm.DB) error {
+func (a *Account) VerifyEmail(db *gorm.DB) error {
 	timeNow := time.Now()
 	a.EmailVerifiedAt = &timeNow
 	err := db.Save(a).Error
@@ -91,6 +91,6 @@ func (a *Account) verifyEmail(db *gorm.DB) error {
 	return nil
 }
 
-func (a *Account) isEmailVerified() bool {
+func (a *Account) IsEmailVerified() bool {
 	return a.EmailVerifiedAt != nil
 }

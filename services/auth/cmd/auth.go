@@ -1,8 +1,12 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
+	"net/http"
+	"os"
+	"time"
 
 	beanstalkd "github.com/barreyo/efantasy/libs/beanstalkd"
 	auth "github.com/barreyo/efantasy/services/auth/api"
@@ -11,9 +15,23 @@ import (
 
 	efanlog "github.com/barreyo/efantasy/libs/log"
 	"github.com/barreyo/efantasy/services/auth/internal"
+	"github.com/heptiolabs/healthcheck"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 )
+
+func registerHealthChecks(user string, password string, hostname string) {
+	health := healthcheck.NewHandler()
+	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(100))
+
+	connParams := fmt.Sprintf("%s:%s@tcp(%s:3306)/", user, password, hostname)
+	db, _ := sql.Open("mysql", connParams)
+
+	health.AddReadinessCheck("database", healthcheck.DatabasePingCheck(db, 2*time.Second))
+	// health.AddReadinessCheck("beanstalkd", healthcheck.TCPDialCheck("beanstalkd", 2*time.Second))
+
+	go http.ListenAndServe("0.0.0.0:8086", health)
+}
 
 func main() {
 	var port = flag.Int("port", 8000, "Port to serve auth API")
@@ -22,14 +40,13 @@ func main() {
 	var dbPassword = flag.String("db_password", "password", "DB password")
 	var beanstalkdAddr = flag.String("beanstalkd_address", "beanstalkd", "Beanstalkd address")
 	var beanstalkdPort = flag.String("beanstalkd_port", "11300", "Beanstalkd port")
-
-	var jwtKey = flag.String("jwt_key", "", "JWT signing key, needs to be same across cluster")
 	flag.Parse()
 
+	jwtKey := os.Getenv("JWT_KEY")
 	log := efanlog.GetLogger()
 
-	if *jwtKey == "" {
-		log.Fatal("'jwt_key' missing")
+	if jwtKey == "" {
+		log.Fatal("'JWT_KEY' not found in environment")
 	}
 
 	swagger, err := auth.GetSwagger()
@@ -45,7 +62,7 @@ func main() {
 	defer dbHandler.Close()
 
 	beanstalkClient := beanstalkd.CreateBeanstalkdClient(*beanstalkdAddr, *beanstalkdPort)
-	authAPI := internal.NewAuthAPI(dbHandler, beanstalkClient)
+	authAPI := internal.NewAuthAPI(dbHandler, beanstalkClient, []byte(jwtKey))
 
 	// TODO: Attach more middlewares and move to global lib for easy use
 	e := echo.New()
@@ -53,10 +70,10 @@ func main() {
 	e.Use(middleware.OapiRequestValidator(swagger))
 	e.Use(efanlog.EchoLoggingMiddleware())
 
-	// healthz.RegisterHealthChecks(e)
-
 	// Register routes
 	auth.RegisterHandlers(e, authAPI)
+
+	registerHealthChecks(*dbUser, *dbPassword, *dbHostname)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", *port)))
 }

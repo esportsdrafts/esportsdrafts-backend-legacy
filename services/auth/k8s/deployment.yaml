@@ -15,7 +15,31 @@ spec:
           name: auth
           ports:
             - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: config
           env:
+            - name: ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: ENV
             - name: JWT_KEY
-              value: "string_for_local_test_update_me"
+              valueFrom:
+                secretKeyRef:
+                  name: auth
+                  key: jwt_key
+
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: 8086
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8086
+            periodSeconds: 5
 

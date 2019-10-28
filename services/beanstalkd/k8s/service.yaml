@@ -1,10 +1,29 @@
+# Main Beanstalkd service
 apiVersion: v1
 kind: Service
 metadata:
   name: beanstalkd
+  labels:
+    app: beanstalkd
 spec:
   ports:
     - port: 11300
   selector:
     app: beanstalkd
   clusterIP: None
+---
+# Metrics service
+apiVersion: v1
+kind: Service
+metadata:
+  name: beanstalkd-metrics
+  labels:
+    app: beanstalkd
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 11301
+    targetPort: metrics
+  selector:
+    app: beanstalkd

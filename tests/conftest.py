@@ -1,10 +1,9 @@
 
-from random import choice
-from string import ascii_uppercase, ascii_lowercase
 from typing import Text
 
 import pytest
 from tests.common.user import User, create_new_account
+from tests.common.utils import gen_random_chars
 
 env_urls = {
     'dev': 'api.dev.int.efantasy.com',
@@ -21,42 +20,37 @@ def pytest_addoption(parser):
         help='Pick which environment to run integration tests against')
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def env(pytestconfig):
     return pytestconfig.getoption('env')
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def api_env_url(env: Text) -> Text:
     return 'api.' + env_urls[env]
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def env_url(env: Text) -> Text:
     return env_urls[env]
 
 
-def __gen_random_chars(n: int) -> Text:
-    return ''.join(choice(ascii_uppercase + ascii_lowercase + '-_')
-                   for i in range(n))
-
-
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_username() -> Text:
-    return 'test_user_' + __gen_random_chars(14)
+    return 'test_user_' + gen_random_chars(14)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_email() -> Text:
-    return 'test_user_' + __gen_random_chars(14) + '@test.nu'
+    return 'test_user_' + gen_random_chars(14) + '@test.nu'
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def test_password() -> Text:
-    return __gen_random_chars(30)
+    return gen_random_chars(30)
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def user(api_env_url: Text,
          test_username: Text,
          test_password: Text,
