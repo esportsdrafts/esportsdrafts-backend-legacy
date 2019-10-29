@@ -16,20 +16,42 @@ For `OS X` these can be installed via `brew`.
 ## Configuring Local Env
 To be written.
 
-Set up 'inbox' for local email testing. Details
-`https://minikube.sigs.k8s.io/docs/tasks/mount/`.
+1. Set up 'email inbox' for local email testing. Details
+   `https://minikube.sigs.k8s.io/docs/tasks/mount/`.
 
-OS X:
-```bash
-$ sudo mkdir /Users/inbox
-$ sudo chmod 666 /Users/inbox
-```
+   **OS X:**
+   ```bash
+   $ sudo mkdir /Users/inbox
+   $ sudo chmod 666 /Users/inbox
+   ```
 
-Linux:
-```bash
-$ sudo mkdir /home/inbox
-$ sudo chmod 666 /home/inbox
-```
+   **Linux:**
+   ```bash
+   $ sudo mkdir /home/inbox
+   $ sudo chmod 666 /home/inbox
+   ```
+
+2. Start minikube:
+   ```bash
+   $ minikube start --memory=4096 --cpus=4 --vm-driver=virtualbox
+   ```
+
+3. Add `/etc/hosts` entry:
+   ```bash
+   $ echo "$(minikube ip) api.esportsdrafts.localhost" | sudo tee -a /etc/hosts
+   $ echo "$(minikube ip) esportsdrafts.localhost" | sudo tee -a /etc/hosts
+   ```
+
+4. Now you should be ready to run:
+   ```bash
+   $ make watch
+   ```
+
+   Which will launch Tilt and setup your local cluster. A browser window will
+   open where you can view the state of the cluster and logs for each service.
+
+**NOTE:** Steps have not been tested on Linux so setup process might need some
+love work properly
 
 ## Committing Code
 The project follows a trunk-based development process, in other words the
@@ -64,4 +86,3 @@ to match your new service.
 
 TODO: Make a small utility that creates the boilerplate structure
 given a name of a new service.
-
