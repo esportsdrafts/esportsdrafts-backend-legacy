@@ -14,18 +14,18 @@ metadata:
 spec:
   tls:
     - hosts:
-        - api.efantasy.localhost
-        - efantasy.localhost
+        - api.esportsdrafts.localhost
+        - esportsdrafts.localhost
       secretName: tls-certificate
   rules:
-    - host: efantasy.localhost
+    - host: esportsdrafts.localhost
       http:
         paths:
           - path: /
             backend:
               serviceName: frontend
               servicePort: 8000
-    - host: api.efantasy.localhost
+    - host: api.esportsdrafts.localhost
       http:
         paths:
           - path: /v1/auth

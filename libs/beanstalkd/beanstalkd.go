@@ -1,7 +1,7 @@
 package beanstalkd
 
 import (
-	"github.com/barreyo/efantasy/libs/beanstalkd/models"
+	"github.com/barreyo/esportsdrafts/libs/beanstalkd/models"
 )
 
 // CreateBeanstalkdClient creates a simple client wrapper

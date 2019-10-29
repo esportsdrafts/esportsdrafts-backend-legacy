@@ -14,7 +14,7 @@ spec:
         app: mysql
     spec:
       containers:
-        - image: efantasy-mysql
+        - image: esportsdrafts-mysql
           imagePullPolicy: IfNotPresent
           name: mysql
           env:

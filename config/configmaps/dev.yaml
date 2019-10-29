@@ -4,7 +4,7 @@ metadata:
   name: config
 data:
   ENV: local
-  BASE_URL: efantasy.dev
+  BASE_URL: esportsdrafts.dev
   BEANSTALKD_ADDR: beanstalkd
   BEANSTALKD_PORT: "11300"
   DB_HOSTNAME: mysql

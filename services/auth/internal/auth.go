@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	beanstalkd_models "github.com/barreyo/efantasy/libs/beanstalkd/models"
-	efanlog "github.com/barreyo/efantasy/libs/log"
-	auth "github.com/barreyo/efantasy/services/auth/api"
-	"github.com/barreyo/efantasy/services/auth/db"
+	beanstalkd_models "github.com/barreyo/esportsdrafts/libs/beanstalkd/models"
+	efanlog "github.com/barreyo/esportsdrafts/libs/log"
+	auth "github.com/barreyo/esportsdrafts/services/auth/api"
+	"github.com/barreyo/esportsdrafts/services/auth/db"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
@@ -24,7 +24,7 @@ const (
 	minPasswordLength   = 12
 )
 
-// JWTClaims holds eFantasy auth claims. Roles array denotes what the user
+// JWTClaims holds esportsdrafts auth claims. Roles array denotes what the user
 // can do within the application. For example and 'admin' would have elevated
 // access compared to a 'user'.
 type JWTClaims struct {
@@ -275,7 +275,7 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 
 	expirationTime := time.Now().Add(48 * time.Hour)
 	verifyCode := &db.EmailVerificationCode{
-		UserID:    dbAccount.ID.String(),
+		UserID:    dbAccount.ID,
 		ExpiresAt: expirationTime,
 	}
 
@@ -301,7 +301,7 @@ func (a *AuthAPI) Verify(ctx echo.Context) error {
 	}
 
 	var account db.Account
-	err = a.dbHandler.Preload("EmailVerificationCodes").Where("username = ?", request.Username).First(&account).Error
+	err = a.dbHandler.Where("username = ?", request.Username).First(&account).Error
 	if err != nil {
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "User not found")
 	}
@@ -310,18 +310,10 @@ func (a *AuthAPI) Verify(ctx echo.Context) error {
 		return ctx.JSON(http.StatusOK, map[string]int{})
 	}
 
-	codeFound := false
 	var token db.EmailVerificationCode
-	for _, v := range account.EmailVerificationCodes {
-		if v.ID.String() == request.Token {
-			codeFound = true
-			token = v
-			break
-		}
-	}
-
-	if !codeFound {
-		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid token")
+	err = a.dbHandler.Where("id = ? AND user_id = ?", request.Token, account.ID).First(&token).Error
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Token not found")
 	}
 
 	if token.ExpiresAt.Before(time.Now()) {

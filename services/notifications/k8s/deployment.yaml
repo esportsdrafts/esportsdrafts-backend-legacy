@@ -11,7 +11,7 @@ spec:
         app: notifications
     spec:
       containers:
-        - image: efantasy-notifications
+        - image: esportsdrafts-notifications
           name: notifications
           env:
             - name: ENV

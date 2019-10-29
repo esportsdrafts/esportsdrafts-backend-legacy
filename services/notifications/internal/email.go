@@ -17,11 +17,11 @@ var /* const */ h = hermes.Hermes{
 	Theme: new(hermes.Flat),
 	Product: hermes.Product{
 		// Appears in header & footer of e-mails
-		Name: "eFantasy",
-		Link: "https://efantasy.dev/",
+		Name: "esportsdrafts",
+		Link: "https://esportsdrafts.dev/",
 		// Optional product logo
 		Logo:      "http://www.duchess-france.org/wp-content/uploads/2016/01/gopher.png",
-		Copyright: fmt.Sprintf("Copyright © %d eFantasy. All rights reserved.", yearNow),
+		Copyright: fmt.Sprintf("Copyright © %d esportsdrafts. All rights reserved.", yearNow),
 	},
 }
 
@@ -43,16 +43,16 @@ func SendWelcomeEmail(username, userEmail, code string) error {
 		Body: hermes.Body{
 			Name: username,
 			Intros: []string{
-				"Welcome to eFantasy!",
+				"Welcome to esportsdrafts!",
 				"We're very excited to have you on board.",
 			},
 			Actions: []hermes.Action{
 				{
-					Instructions: "To get started with eFantasy, please click here:",
+					Instructions: "To get started with esportsdrafts, please click here:",
 					Button: hermes.Button{
 						Color: "#22BC66", // Optional action button color
 						Text:  "Confirm your account",
-						Link:  fmt.Sprintf("https://efantasy.dev/confirm?user=%s&token=%s", username, code),
+						Link:  fmt.Sprintf("https://esportsdrafts.dev/confirm?user=%s&token=%s", username, code),
 					},
 				},
 			},
@@ -91,7 +91,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 		Body: hermes.Body{
 			Name: username,
 			Intros: []string{
-				"You have received this email because a password reset request for your eFantasy account was recieved.",
+				"You have received this email because a password reset request for your esportsdrafts account was recieved.",
 			},
 			Actions: []hermes.Action{
 				{
@@ -99,7 +99,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 					Button: hermes.Button{
 						Color: "#DC4D2F", // Optional action button color
 						Text:  "Reset your password",
-						Link:  fmt.Sprintf("https://efantasy.dev/reset_password?user=%s&token=%s", username, code),
+						Link:  fmt.Sprintf("https://esportsdrafts.dev/reset_password?user=%s&token=%s", username, code),
 					},
 				},
 			},

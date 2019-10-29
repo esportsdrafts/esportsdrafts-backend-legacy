@@ -11,7 +11,7 @@ spec:
         app: frontend
     spec:
       containers:
-        - image: efantasy-frontend
+        - image: esportsdrafts-frontend
           name: frontend
           ports:
             - containerPort: 8080

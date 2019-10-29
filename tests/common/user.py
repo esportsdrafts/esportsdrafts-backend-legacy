@@ -8,13 +8,13 @@ from tests.common.utils import raise_on_error
 
 
 class User():
-    """eFantasy user account."""
+    """esportsdrafts user account."""
 
     def __init__(self,
                  username: Text,
                  email: Text,
                  password: Text,
-                 url: Text = 'https://api.efantasy.com'):
+                 url: Text = 'https://api.esportsdrafts.com'):
         """
         Initialize a user.
 
@@ -85,7 +85,7 @@ class User():
 def create_new_account(username: Text,
                        email: Text,
                        password: Text,
-                       url: Text = 'https://api.efantasy.localhost') -> User:
+                       url: Text = 'https://api.esportsdrafts.localhost') -> User:
     """
     Create a new user account and return a User object.
 

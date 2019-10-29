@@ -27,20 +27,20 @@ func (base *Base) BeforeCreate(scope *gorm.Scope) error {
 // stored in the `user` service.
 type Account struct {
 	Base
-	Username               string     `gorm:"varchar(128);not null;unique_index" json:"username"`
-	Email                  string     `gorm:"varchar(256);not null;unique_index" json:"email"`
-	Password               string     `gorm:"column:password_hash;varchar(256);not null" json:"-"`
-	AcceptedTermsAt        *time.Time `json:"accepted_terms_at"`
-	MFA                    *MFAMethod `json:"mfa_method"`
-	EmailVerifiedAt        *time.Time `json:"email_verified_at"`
-	EmailVerificationCodes []EmailVerificationCode
+	Username        string     `gorm:"varchar(128);not null;unique_index" json:"username"`
+	Email           string     `gorm:"varchar(256);not null;unique_index" json:"email"`
+	Password        string     `gorm:"column:password_hash;varchar(256);not null" json:"-"`
+	AcceptedTermsAt *time.Time `json:"accepted_terms_at"`
+	MFA             *MFAMethod `json:"mfa_method"`
+	EmailVerifiedAt *time.Time `json:"email_verified_at"`
 }
 
 // EmailVerificationCode is used to verify a users email
 // Just use the built-in ID of the object as the verify code
 type EmailVerificationCode struct {
 	Base
-	UserID    string    `gorm:"varchar(36);not null;index;" json:"user_id"`
+	User      Account   `gorm:"foreignkey:UserID"`
+	UserID    uuid.UUID `gorm:"varchar(36);not null;index;" json:"user_id"`
 	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
 }
 

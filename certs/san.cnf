@@ -7,10 +7,10 @@ prompt             = no
 countryName                 = US
 stateOrProvinceName         = CA
 localityName               = San Francisco
-organizationName           = eFantasy
-commonName                 = efantasy.localhost
+organizationName           = esportsdrafts
+commonName                 = esportsdrafts.localhost
 [ req_ext ]
 subjectAltName = @alt_names
 [alt_names]
-DNS.1   = efantasy.localhost
-DNS.2   = api.efantasy.localhost
+DNS.1   = esportsdrafts.localhost
+DNS.2   = api.esportsdrafts.localhost

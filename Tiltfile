@@ -1,6 +1,6 @@
 # -*- mode: Python -*-
 
-default_registry('docker.pkg.github.com/barreyo/efantasy')
+default_registry('docker.pkg.github.com/barreyo/esportsdrafts')
 
 services_k8s_files = [
     # GENERAL/GLOBAL CONFIG
@@ -46,26 +46,26 @@ go_ignores = ['tests', 'certs', 'docs', 'Dockerfile.testing', 'README.md',
               'requirements-dev.txt', 'requirements.in', 'requirements.txt']
 
 # Frontend is an edge-case since it lives in a seperate repo
-docker_build('efantasy-frontend', '../efantasy-frontend/',
-             dockerfile='../efantasy-frontend/Dockerfile')
+docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend/',
+             dockerfile='../esportsdrafts-frontend/Dockerfile')
 
 # Docker images
-docker_build('efantasy-base', './',
+docker_build('esportsdrafts-base', './',
              dockerfile='Dockerfile')
 
-docker_build('efantasy-mysql', 'services/mysql',
+docker_build('esportsdrafts-mysql', 'services/mysql',
              dockerfile='services/mysql/Dockerfile')
 
-docker_build('efantasy-auth', 'services/auth',
+docker_build('esportsdrafts-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile',
              ignore=go_ignores)
 
-docker_build('efantasy-notifications', 'services/notifications',
+docker_build('esportsdrafts-notifications', 'services/notifications',
              dockerfile='services/notifications/Dockerfile',
              ignore=go_ignores)
 
-docker_build('efantasy-beanstalkd-metrics', 'services/beanstalkd',
+docker_build('esportsdrafts-beanstalkd-metrics', 'services/beanstalkd',
              dockerfile='services/beanstalkd/Dockerfile.metrics')
 
-docker_build('efantasy-beanstalkd', 'services/beanstalkd',
+docker_build('esportsdrafts-beanstalkd', 'services/beanstalkd',
              dockerfile='services/beanstalkd/Dockerfile')

@@ -1,5 +1,5 @@
 # General project settings
-PROJECT_NAME 		:= efantasy
+PROJECT_NAME 		:= esportsdrafts
 DOCKER_BASE_IMAGE 	:= $(PROJECT_NAME)-base
 SERVICES 		 	 = $(shell find ./services -name Dockerfile -print0 | xargs -0 -n1 dirname | xargs -n1 basename | sort --unique)
 ENVIRONMENT 		?= local
@@ -36,7 +36,7 @@ docker-base:  ## Build the base image for all services
 
 frontend:  ## Build frontend. Requires that the repo is cloned in parent directory to this repo
 	@echo "$(BOLD)** Building frontend docker image...$(RESET)"
-	docker build -f ../efantasy-frontend/Dockerfile -t $(PROJECT_NAME)-frontend:latest ../efantasy-frontend
+	docker build -f ../esportsdrafts-frontend/Dockerfile -t $(PROJECT_NAME)-frontend:latest ../esportsdrafts-frontend
 
 watch:  ## Start up a local development environment that watches and redeploys changes automatically
 	tilt up --watch

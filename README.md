@@ -1,4 +1,4 @@
-# e-Fantasy
+# esportsdrafts
 Daily fantasy esport leagues.
 
 ## Developing

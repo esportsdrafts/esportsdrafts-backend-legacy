@@ -1,5 +1,5 @@
 
-FROM efantasy-base:latest AS builder
+FROM esportsdrafts-base:latest AS builder
 
 COPY ./ /workspace/services/auth
 
@@ -13,7 +13,7 @@ FROM scratch
 ARG VERSION=unknown
 ENV VERSION=${VERSION}
 
-LABEL Name "eFantasy-auth"
+LABEL Name "esportsdrafts-auth"
 LABEL Version ${VERSION}
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt \

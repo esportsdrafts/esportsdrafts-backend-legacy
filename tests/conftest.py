@@ -6,10 +6,10 @@ from tests.common.user import User, create_new_account
 from tests.common.utils import gen_random_chars
 
 env_urls = {
-    'dev': 'api.dev.int.efantasy.com',
-    'stage': 'api.stage.int.efantasy.com',
-    'prod': 'api.efantasy.com',
-    'local': 'efantasy.localhost',
+    'dev': 'api.dev.int.esportsdrafts.com',
+    'stage': 'api.stage.int.esportsdrafts.com',
+    'prod': 'api.esportsdrafts.com',
+    'local': 'esportsdrafts.localhost',
 }
 
 

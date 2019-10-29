@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: beanstalkd
-          image: efantasy-beanstalkd
+          image: esportsdrafts-beanstalkd
           imagePullPolicy: IfNotPresent
           ports:
           - name: beanstalkd
@@ -41,7 +41,7 @@ spec:
               - name: binlog
                 mountPath: /var/lib/beanstalkd
         - name: beanstalkd-metrics
-          image: efantasy-beanstalkd-metrics
+          image: esportsdrafts-beanstalkd-metrics
           imagePullPolicy: IfNotPresent
           command: ["/beanstalkd_exporter", "--web.listen-address=:11301", "--beanstalkd.address=beanstalkd:11300"]
           ports:

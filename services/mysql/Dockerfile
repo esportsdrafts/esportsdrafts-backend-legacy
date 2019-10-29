@@ -1,9 +1,9 @@
 
-FROM docker.pkg.github.com/barreyo/efantasy/efantasy-mysql:27c1535
+FROM docker.pkg.github.com/barreyo/esportsdrafts/esportsdrafts-mysql:27c1535
 
 ARG VERSION
 
-LABEL Name="eFantasy-mysql"
+LABEL Name="esportsdrafts-mysql"
 LABEL Version=${VERSION}
 
 COPY config/mysql.cnf /etc/mysql/conf.d

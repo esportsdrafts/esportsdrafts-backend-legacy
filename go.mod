@@ -1,4 +1,4 @@
-module github.com/barreyo/efantasy
+module github.com/barreyo/esportsdrafts
 
 go 1.12
 

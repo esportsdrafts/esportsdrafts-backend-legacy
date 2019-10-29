@@ -8,13 +8,13 @@ import (
 	"os"
 	"time"
 
-	beanstalkd "github.com/barreyo/efantasy/libs/beanstalkd"
-	auth "github.com/barreyo/efantasy/services/auth/api"
-	"github.com/barreyo/efantasy/services/auth/db"
+	beanstalkd "github.com/barreyo/esportsdrafts/libs/beanstalkd"
+	auth "github.com/barreyo/esportsdrafts/services/auth/api"
+	"github.com/barreyo/esportsdrafts/services/auth/db"
 	"github.com/deepmap/oapi-codegen/pkg/middleware"
 
-	efanlog "github.com/barreyo/efantasy/libs/log"
-	"github.com/barreyo/efantasy/services/auth/internal"
+	efanlog "github.com/barreyo/esportsdrafts/libs/log"
+	"github.com/barreyo/esportsdrafts/services/auth/internal"
 	"github.com/heptiolabs/healthcheck"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
