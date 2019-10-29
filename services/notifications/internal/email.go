@@ -10,6 +10,7 @@ import (
 )
 
 var /* const */ env = os.Getenv("ENV")
+var /* const */ baseURL = os.Getenv("BASE_URL")
 
 var /* const */ yearNow = time.Now().Year()
 var /* const */ h = hermes.Hermes{
@@ -17,8 +18,8 @@ var /* const */ h = hermes.Hermes{
 	Theme: new(hermes.Flat),
 	Product: hermes.Product{
 		// Appears in header & footer of e-mails
-		Name: "esportsdrafts",
-		Link: "https://esportsdrafts.dev/",
+		Name: "ESportsDrafts",
+		Link: fmt.Sprintf("https://%s/", baseURL),
 		// Optional product logo
 		Logo:      "http://www.duchess-france.org/wp-content/uploads/2016/01/gopher.png",
 		Copyright: fmt.Sprintf("Copyright © %d esportsdrafts. All rights reserved.", yearNow),
@@ -52,7 +53,7 @@ func SendWelcomeEmail(username, userEmail, code string) error {
 					Button: hermes.Button{
 						Color: "#22BC66", // Optional action button color
 						Text:  "Confirm your account",
-						Link:  fmt.Sprintf("https://esportsdrafts.dev/confirm?user=%s&token=%s", username, code),
+						Link:  fmt.Sprintf("https://%s/confirm?user=%s&token=%s", baseURL, username, code),
 					},
 				},
 			},
@@ -99,7 +100,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 					Button: hermes.Button{
 						Color: "#DC4D2F", // Optional action button color
 						Text:  "Reset your password",
-						Link:  fmt.Sprintf("https://esportsdrafts.dev/reset_password?user=%s&token=%s", username, code),
+						Link:  fmt.Sprintf("https://%s/reset_password?user=%s&token=%s", baseURL, username, code),
 					},
 				},
 			},

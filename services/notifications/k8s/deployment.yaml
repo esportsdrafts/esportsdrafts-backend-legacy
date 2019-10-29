@@ -19,6 +19,11 @@ spec:
                 configMapKeyRef:
                   name: config
                   key: ENV
+            - name: BASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: config
+                  key: BASE_URL
           envFrom:
             - configMapRef:
                 name: config

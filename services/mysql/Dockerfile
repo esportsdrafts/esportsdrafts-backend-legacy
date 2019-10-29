@@ -1,5 +1,5 @@
 
-FROM docker.pkg.github.com/barreyo/esportsdrafts/esportsdrafts-mysql:27c1535
+FROM docker.pkg.github.com/barreyo/esportsdrafts/esportsdrafts-mysql:10-28-2019
 
 ARG VERSION
 

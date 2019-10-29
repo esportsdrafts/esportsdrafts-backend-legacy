@@ -1,5 +1,5 @@
 
-FROM docker.pkg.github.com/barreyo/esportsdrafts/esportsdrafts-golang:27c1535
+FROM docker.pkg.github.com/barreyo/esportsdrafts/esportsdrafts-golang:10-28-2019
 
 ARG VERSION=unknown
 
