@@ -3,8 +3,9 @@ import codecs
 import time
 
 import requests
+from tests.common.email import get_emails_from_local_inbox
 from tests.common.user import create_new_account
-from tests.common.utils import gen_random_chars, get_emails_from_local_inbox
+from tests.common.utils import gen_random_chars
 
 
 def test_create_account(user):
