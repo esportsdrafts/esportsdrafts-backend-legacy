@@ -6,17 +6,16 @@ from tests.common.user import User, create_new_account
 from tests.common.utils import gen_random_chars
 
 env_urls = {
-    'dev': 'api.dev.int.esportsdrafts.com',
-    'stage': 'api.stage.int.esportsdrafts.com',
-    'prod': 'api.esportsdrafts.com',
     'local': 'esportsdrafts.localhost',
+    'staging': 'esportsdrafts.dev',
+    'production': 'esportsdrafts.app',
 }
 
 
 def pytest_addoption(parser):
     parser.addoption(
         '--env', action='store', default='local',
-        choices=['local', 'dev', 'stage', 'prod'],
+        choices=['local', 'staging', 'production'],
         help='Pick which environment to run integration tests against')
 
 

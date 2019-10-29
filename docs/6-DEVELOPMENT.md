@@ -1,20 +1,24 @@
 # Development
-Local development depens on a few things. Install the requirements
-below to get started. Rest of this document relies on them being
+Local development depends on a few things. Install the requirements
+below to get started. Rest of this document assumes them already being
 installed.
 
-For `OS X` these can be installed via `brew`.
+For `OS X` most of these can be installed via `brew`.
 
 **Requirements**:
 * Go
 * Docker
 * Minikube
+* Virtualbox
 * kubectl
 * Tilt
-* Python3.7
+* Python3.7 (Running integration tests)
 
 ## Configuring Local Env
-To be written.
+Below are one-time setup for local development using `Minikube` and `Tilt`.
+After following the guide you should be able to just run `make watch`. Each
+service will be rebuilt and deployed to your local deployment automatically
+when a change is detected.
 
 1. Set up 'email inbox' for local email testing. Details
    `https://minikube.sigs.k8s.io/docs/tasks/mount/`.
