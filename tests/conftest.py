@@ -19,37 +19,37 @@ def pytest_addoption(parser):
         help='Pick which environment to run integration tests against')
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def env(pytestconfig):
     return pytestconfig.getoption('env')
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def api_env_url(env: Text) -> Text:
     return 'api.' + env_urls[env]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def env_url(env: Text) -> Text:
     return env_urls[env]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def test_username() -> Text:
     return 'test_user_' + gen_random_chars(14)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def test_email() -> Text:
     return 'test_user_' + gen_random_chars(14) + '@test.nu'
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def test_password() -> Text:
     return gen_random_chars(30)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope='session')
 def user(api_env_url: Text,
          test_username: Text,
          test_password: Text,

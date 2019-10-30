@@ -82,10 +82,9 @@ class User():
 # TODO: Move all below to api_client class
 
 
-def create_new_account(username: Text,
-                       email: Text,
-                       password: Text,
-                       url: Text = 'https://api.esportsdrafts.localhost') -> User:
+def create_new_account(
+        username: Text, email: Text, password: Text,
+        url: Text = 'https://api.esportsdrafts.localhost') -> User:
     """
     Create a new user account and return a User object.
 

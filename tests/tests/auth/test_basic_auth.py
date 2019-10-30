@@ -1,9 +1,8 @@
 
-import codecs
 import time
 
 import requests
-from tests.common.email import get_emails_from_local_inbox
+from tests.common.email import get_emails_from_local_inbox, read_local_email
 from tests.common.user import create_new_account
 from tests.common.utils import gen_random_chars
 
@@ -86,8 +85,7 @@ def test_verification_email_sent(user, env):
                 time.sleep(3)
                 continue
 
-            parsed = codecs.open('/Users/inbox/' + latest_email, 'r')
-            parsed = parsed.read()
+            parsed = read_local_email(latest_email)
 
             if user.username in parsed:
                 return
@@ -95,7 +93,7 @@ def test_verification_email_sent(user, env):
             # Wait a bit for results to come in
             time.sleep(3)
 
-        assert False, "No welcome email found with correct content"
+        assert False, 'No welcome email found with correct content'
     else:
         # TODO: Check cloud database for email
         # each 'test' email is copied to a DB in GCP
