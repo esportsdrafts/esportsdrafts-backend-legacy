@@ -1,15 +1,21 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-ingress-controller
   namespace: default
+  labels:
+    service: ingress
 spec:
   replicas: 1
   revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      service: ingress
   template:
     metadata:
       labels:
-        k8s-app: nginx-ingress-lb
+        app: nginx-ingress-lb
+        service: ingress
     spec:
       serviceAccount: nginx
       containers:

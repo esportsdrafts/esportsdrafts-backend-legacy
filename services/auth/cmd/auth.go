@@ -55,6 +55,7 @@ func main() {
 	}
 	swagger.Servers = nil
 
+	log.Info("Connecting to DB...")
 	dbHandler, err := db.CreateDBHandler(*dbHostname, *dbUser, *dbPassword, "auth_db")
 	if err != nil {
 		log.Fatal("Error connecting to DB: ", err)
@@ -73,7 +74,9 @@ func main() {
 	// Register routes
 	auth.RegisterHandlers(e, authAPI)
 
+	log.Info("Registering health checks...")
 	registerHealthChecks(*dbUser, *dbPassword, *dbHostname)
 
+	log.Infof("Initialization done. Serving on port %d...", *port)
 	e.Logger.Fatal(e.Start(fmt.Sprintf("0.0.0.0:%d", *port)))
 }

@@ -1,14 +1,22 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: frontend
   namespace: default
+  labels:
+    service: frontend
+    app.kubernetes.io/managed-by: tilt
 spec:
+  selector:
+    matchLabels:
+      service: frontend
+      app.kubernetes.io/managed-by: tilt
   replicas: 1
   template:
     metadata:
       labels:
-        app: frontend
+        service: frontend
+        app.kubernetes.io/managed-by: tilt
     spec:
       containers:
         - image: esportsdrafts-frontend

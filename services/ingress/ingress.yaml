@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1beta1
 kind: Ingress
 metadata:
   name: ingress-nginx
@@ -24,7 +24,7 @@ spec:
           - path: /
             backend:
               serviceName: frontend
-              servicePort: 8000
+              servicePort: 8080
     - host: api.esportsdrafts.localhost
       http:
         paths:

@@ -1,14 +1,21 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: notifications-deployment
+  name: notifications
   namespace: default
+  labels:
+    service: notifications
+    app.kubernetes.io/managed-by: tilt
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      service: notifications
+      app.kubernetes.io/managed-by: tilt
   template:
     metadata:
       labels:
-        app: notifications
+        service: notifications
     spec:
       containers:
         - image: esportsdrafts-notifications
@@ -38,4 +45,3 @@ spec:
             # TODO: This will only support OS X right now
             # Linux needs to mount /home/inbox
             path: /Users/inbox
-

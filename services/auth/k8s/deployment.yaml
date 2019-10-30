@@ -1,14 +1,22 @@
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: auth-deployment
+  name: auth
   namespace: default
+  labels:
+    service: auth
+    app.kubernetes.io/managed-by: tilt
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      service: auth
+      app.kubernetes.io/managed-by: tilt
   template:
     metadata:
       labels:
-        app: auth
+        service: auth
+        app.kubernetes.io/managed-by: tilt
     spec:
       containers:
         - image: esportsdrafts-auth
@@ -42,4 +50,3 @@ spec:
               path: /ready
               port: 8086
             periodSeconds: 5
-
