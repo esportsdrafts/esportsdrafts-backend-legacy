@@ -51,7 +51,7 @@ docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend/',
 
 # Docker images
 docker_build('esportsdrafts-base', './',
-             dockerfile='Dockerfile')
+             dockerfile='Dockerfile', ignore=go_ignores)
 
 docker_build('esportsdrafts-mysql', 'services/mysql',
              dockerfile='services/mysql/Dockerfile')
