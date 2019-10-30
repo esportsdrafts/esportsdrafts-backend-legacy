@@ -20,8 +20,8 @@ After following the guide you should be able to just run `make watch`. Each
 service will be rebuilt and deployed to your local deployment automatically
 when a change is detected.
 
-1. Set up 'email inbox' for local email testing. Details
-   `https://minikube.sigs.k8s.io/docs/tasks/mount/`.
+1. Set up 'email inbox' for local email testing. More details on shared 
+   folders for Minikube: `https://minikube.sigs.k8s.io/docs/tasks/mount/`.
 
    **OS X:**
    ```bash

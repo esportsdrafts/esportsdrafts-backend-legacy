@@ -36,7 +36,8 @@ func GetDefaultValidator() BasicValidator {
 //   * Can only contain [a-z][0-9] and - or _
 // 	 * min <= Length <= ma
 func (d *BasicValidator) ValidateUsername(name string) bool {
-	return validUsernameString(name, d.minUsernameLength, d.maxUsernameLength)
+	return (validUsernameString(name, d.minUsernameLength, d.maxUsernameLength) &&
+		!IsProfane(name))
 }
 
 // ValidateEmail returns true if string contains @ and a punctuation,
