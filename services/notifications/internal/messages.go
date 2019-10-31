@@ -30,14 +30,16 @@ func RunReceiveLoop() {
 	for {
 		id, body, err := c.Reserve(RcvTimeout * time.Second)
 		if err != nil {
-			c.Release(id, ReleasePriority, ReleaseDelay)
 			continue
 		}
 
 		parsed, err := gabs.ParseJSON(body)
 		if err != nil {
 			logger.Warnf("Failed to parse message %d, with body: %s", id, body)
-			c.Release(id, ReleasePriority, ReleaseDelay)
+			err = c.Release(id, ReleasePriority, ReleaseDelay)
+			if err != nil {
+				logger.Errorf("Failed to release message %d. Error: \n%s", id, err)
+			}
 			continue
 		}
 
@@ -45,7 +47,10 @@ func RunReceiveLoop() {
 		jobType, ok := parsed.Path("job_type").Data().(string)
 		if !ok {
 			logger.Warnf("Failed to parse message %d, with body: %s", id, body)
-			c.Release(id, ReleasePriority, ReleaseDelay)
+			err = c.Release(id, ReleasePriority, ReleaseDelay)
+			if err != nil {
+				logger.Errorf("Failed to release message %d. Error: \n%s", id, err)
+			}
 			continue
 		}
 
@@ -56,14 +61,20 @@ func RunReceiveLoop() {
 			err = json.Unmarshal(body, &msg)
 			if err != nil {
 				logger.Warnf("Failed to parse welcome message %d, with body: %s", id, body)
-				c.Release(id, ReleasePriority, ReleaseDelay)
+				err = c.Release(id, ReleasePriority, ReleaseDelay)
+				if err != nil {
+					logger.Errorf("Failed to release message %d. Error: \n%s", id, err)
+				}
 				continue
 			}
 			logger.Infof("Sending welcome email")
 			err = SendWelcomeEmail(msg.Username, msg.Email, msg.VerificationCode)
 			if err != nil {
 				logger.Warnf("Failed to send welcome email. Error: %s", err)
-				c.Release(id, ReleasePriority, ReleaseDelay)
+				err = c.Release(id, ReleasePriority, ReleaseDelay)
+				if err != nil {
+					logger.Errorf("Failed to release message %d. Error: \n%s", id, err)
+				}
 				continue
 			}
 			break
@@ -72,25 +83,36 @@ func RunReceiveLoop() {
 			err = json.Unmarshal(body, &msg)
 			if err != nil {
 				logger.Warnf("Failed to parse reset password message %d, with body: %s", id, body)
-				c.Release(id, ReleasePriority, ReleaseDelay)
+				err = c.Release(id, ReleasePriority, ReleaseDelay)
+				if err != nil {
+					logger.Errorf("Failed to release message %d. Error: \n%s", id, err)
+				}
 				continue
 			}
 			logger.Infof("Sending reset password email")
 			err = SendResetPasswordEmail(msg.Username, msg.Email, msg.ResetCode)
 			if err != nil {
 				logger.Warnf("Failed to send password reset email. Error: %s", err)
-				c.Release(id, ReleasePriority, ReleaseDelay)
+				err = c.Release(id, ReleasePriority, ReleaseDelay)
+				if err != nil {
+					logger.Errorf("Failed to release message %d. Error: \n%s", id, err)
+				}
 				continue
 			}
 			break
 		default:
 			logger.Infof("Burying job with id %d", id)
-			c.Bury(id, BuryPriority)
+			err = c.Bury(id, BuryPriority)
+			if err != nil {
+				logger.Errorf("Failed to bury message %d. Error: \n%s", id, err)
+			}
 			continue
 		}
 
-		logger.Infof("Finished job %d. Deleting from queue...", id)
-
-		c.Delete(id)
+		logger.Infof("Finished job %d with type %s. Deleting from queue...", id, jobType)
+		err = c.Delete(id)
+		if err != nil {
+			logger.Errorf("Failed to delete message %d. Error: \n%s", id, err)
+		}
 	}
 }

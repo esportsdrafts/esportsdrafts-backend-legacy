@@ -322,7 +322,11 @@ func (a *AuthAPI) Verify(ctx echo.Context) error {
 	}
 
 	// Set account as verified and delete all tokens
-	account.VerifyEmail(a.dbHandler)
+	err = account.VerifyEmail(a.dbHandler)
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+	}
+
 	return ctx.JSON(http.StatusOK, map[string]int{})
 }
 

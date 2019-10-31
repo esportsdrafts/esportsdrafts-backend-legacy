@@ -29,9 +29,6 @@ var /* const */ h = hermes.Hermes{
 // Used for local dev testing, writing the email to a local file directory
 // such that our integration tests can read from it and verify email content
 func writeLocalEmail(emailType, username, emailBody string) error {
-	if _, err := os.Stat("/inbox"); os.IsNotExist(err) {
-		os.Mkdir("/inbox", os.ModeDir)
-	}
 	now := time.Now()
 	timeNow := now.Unix()
 	fileName := fmt.Sprintf("/inbox/%d_%s_%s.html", timeNow, emailType, username)
