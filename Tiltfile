@@ -61,11 +61,11 @@ docker_build('esportsdrafts-base', './',
 
 docker_build('esportsdrafts-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile',
-             ignore=go_ignores)
+             ignore=go_ignores + ['services/notifications'])
 
 docker_build('esportsdrafts-notifications', 'services/notifications',
              dockerfile='services/notifications/Dockerfile',
-             ignore=go_ignores)
+             ignore=go_ignores + ['services/auth'])
 
 # Frontend is an edge-case since it lives in a seperate repo
 docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend/',

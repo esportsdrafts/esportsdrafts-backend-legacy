@@ -32,6 +32,6 @@ func CreateDBHandler(hostname string, user string, password string, dbname strin
 		return nil, err
 	}
 	db.LogMode(true)
-	db = db.AutoMigrate(Account{}, EmailVerificationCode{}, MFACode{}, MFAMethod{})
+	db = db.AutoMigrate(Account{}, EmailVerificationCode{}, PasswordResetToken{}, MFACode{}, MFAMethod{})
 	return db, nil
 }

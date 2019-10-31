@@ -342,6 +342,35 @@ func (a *AuthAPI) Check(ctx echo.Context, params auth.CheckParams) error {
 
 // Passwordresetrequest initiates a password reset
 func (a *AuthAPI) Passwordresetrequest(ctx echo.Context) error {
+	var request auth.PasswordResetRequest
+	err := ctx.Bind(&request)
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
+	}
+
+	var account db.Account
+	err = a.dbHandler.Where("username = ? AND email = ?", request.Username, request.Email).First(&account).Error
+
+	// Always give a 200, we do not wanna reveal if the email is registered or not
+	// with this username
+	if err != nil {
+		return ctx.JSON(http.StatusOK, map[string]int{})
+	}
+
+	expirationTime := time.Now().Add(24 * time.Hour)
+	verifyCode := &db.PasswordResetToken{
+		UserID:    account.ID,
+		ExpiresAt: expirationTime,
+	}
+
+	err = a.dbHandler.Save(&verifyCode).Error
+	if err != nil {
+		efanlog.GetLogger().Info("Failed to create password reset token")
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+	}
+
+	go SchedulePasswordResetEmail(a.beanstalkHandler, account.Username, account.Email, verifyCode.ID.String())
+
 	return ctx.JSON(http.StatusOK, map[string]int{})
 }
 
@@ -349,5 +378,48 @@ func (a *AuthAPI) Passwordresetrequest(ctx echo.Context) error {
 // matches with the password reset request the password for the account is
 // changed to the supplied one in the request.
 func (a *AuthAPI) Passwordresetverify(ctx echo.Context) error {
+	var request auth.PasswordResetVerify
+	err := ctx.Bind(&request)
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid request format")
+	}
+
+	// TODO: Pull error message from validator to make sure formatting is consistent
+	if !a.inputValidator.ValidatePassword(request.Password) {
+		return sendAuthAPIError(ctx, http.StatusBadRequest,
+			"Password has to be between 12 and 127 characters inclusive")
+	}
+
+	var account db.Account
+	// TODO: add email as well?
+	err = a.dbHandler.Where("username = ?", request.Username).First(&account).Error
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, fmt.Sprint("Username not found"))
+	}
+
+	var token db.PasswordResetToken
+	err = a.dbHandler.Where("id = ? AND user_id = ?", request.Token, account.ID).First(&token).Error
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Invalid token provided")
+	}
+
+	// TODO: Remove expiresAt field and just use creation time to diff with
+	// some value
+	if token.ExpiresAt.Before(time.Now()) {
+		a.dbHandler.Delete(&token)
+		return sendAuthAPIError(ctx, http.StatusBadRequest, "Token has expired")
+	}
+
+	hashingParams := GetDefaultHashingParams()
+	hashedPassword, err := GenerateFromPassword(request.Password, hashingParams)
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+	}
+
+	err = a.dbHandler.Model(&account).Update("password_hash", hashedPassword).Error
+	if err != nil {
+		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+	}
+
 	return ctx.JSON(http.StatusOK, map[string]int{})
 }

@@ -20,16 +20,26 @@ def __check_fails(fn):
 
 
 def test_username_validation():
+    # Check too long username
     __check_fails(lambda: create_new_account(
         gen_random_chars(100),
         gen_random_chars(10) + '@test.nu',
-        gen_random_chars(30)))
+        gen_random_chars(30)
+    ))
 
     # Test max length for password
     __check_fails(lambda: create_new_account(
         '[][]-()2312dsaz...>>>//',
         gen_random_chars(10) + '@test.nu',
-        gen_random_chars(30)))
+        gen_random_chars(30)
+    ))
+
+    # Test profanity filter doing basic validation
+    __check_fails(lambda: create_new_account(
+        'penis',
+        gen_random_chars(10) + '@test.nu',
+        gen_random_chars(30)
+    ))
 
 
 def test_password_validation():
@@ -64,6 +74,7 @@ def test_verification_email_sent(user, env):
     sent_time = int(time.time())
     time_epsilon = 15
 
+    # Encapsulate in an Email class
     if env == 'local':
         # Initial wait for email to get sent
         time.sleep(1)

@@ -36,8 +36,17 @@ type Account struct {
 }
 
 // EmailVerificationCode is used to verify a users email
-// Just use the built-in ID of the object as the verify code
+// Uses the built-in ID of the object as the verify code
 type EmailVerificationCode struct {
+	Base
+	User      Account   `gorm:"foreignkey:UserID"`
+	UserID    uuid.UUID `gorm:"varchar(36);not null;index;" json:"user_id"`
+	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
+}
+
+// PasswordResetToken is used to reset a user's password
+// Uses the built-in ID of the object as the verify code
+type PasswordResetToken struct {
 	Base
 	User      Account   `gorm:"foreignkey:UserID"`
 	UserID    uuid.UUID `gorm:"varchar(36);not null;index;" json:"user_id"`
@@ -49,7 +58,8 @@ type EmailVerificationCode struct {
 // UUID:s.
 type MFACode struct {
 	Base
-	UserID    string    `gorm:"varchar(36);not null;" json:"user_id"`
+	User      Account   `gorm:"foreignkey:UserID"`
+	UserID    uuid.UUID `gorm:"varchar(36);not null;index;" json:"user_id"`
 	Code      string    `gorm:"varchar(10);not null;unique_index" json:"code"`
 	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
 }
