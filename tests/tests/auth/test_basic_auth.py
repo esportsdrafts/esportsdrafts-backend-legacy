@@ -3,7 +3,7 @@ import time
 
 import requests
 from tests.common.email import get_emails_from_local_inbox, read_local_email
-from tests.common.user import create_new_account
+from tests.common.user import create_new_account, check_username_available
 from tests.common.utils import gen_random_chars
 
 
@@ -67,6 +67,13 @@ def test_email_validation(user):
         gen_random_chars(20),
         user.email,
         gen_random_chars(12)))
+
+
+def test_check_username(user):
+    assert check_username_available(user.username, user.url) is False
+    # Make sure validation is happening
+    assert check_username_available('asd', user.url) is False
+    assert check_username_available(gen_random_chars(20), user.url)
 
 
 def test_verification_email_sent(user, env):

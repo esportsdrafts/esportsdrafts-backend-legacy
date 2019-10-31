@@ -128,6 +128,14 @@ def verify_email(user: User, token: Text) -> None:
     raise_on_error(res)
 
 
+def check_username_available(username: Text, env: Text) -> bool:
+    if username is None:
+        return False
+    res = requests.get(
+        f'{env}/v1/auth/check?username={username}', verify=False)
+    return res.status_code == 200
+
+
 def reset_password():
     pass
 

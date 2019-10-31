@@ -329,11 +329,13 @@ func (a *AuthAPI) Verify(ctx echo.Context) error {
 // Check takes a username and verifies if it is already registered or not.
 // Useful endpoint for frontend to do validation in registration form.
 func (a *AuthAPI) Check(ctx echo.Context, params auth.CheckParams) error {
-	var usernameCheck db.Account
-
 	if params.Username != nil {
+		if !a.inputValidator.ValidateUsername(*params.Username) {
+			return ctx.JSON(http.StatusUnauthorized, map[string]int{})
+		}
+		var usernameCheck db.Account
 		err := a.dbHandler.Where("username = ?", params.Username).First(&usernameCheck).Error
-		if err == nil {
+		if err != nil {
 			return ctx.JSON(http.StatusOK, map[string]int{})
 		}
 	}
