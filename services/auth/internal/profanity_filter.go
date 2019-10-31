@@ -14,6 +14,7 @@ var /* const */ englishProfanity = map[string]bool{
 	"ass-fucker": true,
 	"asses": true,
 	"assfucker": true,
+	"ass_fucker": true,
 	"assfukka": true,
 	"asshole": true,
 	"assholes": true,

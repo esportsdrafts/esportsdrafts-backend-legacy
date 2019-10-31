@@ -4,11 +4,13 @@ metadata:
   name: mysql
   labels:
     service: mysql
+    app: mysql
     app.kubernetes.io/managed-by: tilt
 spec:
   selector:
     matchLabels:
       service: mysql
+      app: mysql
       app.kubernetes.io/managed-by: tilt
   strategy:
     type: Recreate
@@ -16,6 +18,7 @@ spec:
     metadata:
       labels:
         service: mysql
+        app: mysql
         app.kubernetes.io/managed-by: tilt
     spec:
       containers:
