@@ -38,6 +38,7 @@ when a change is detected.
 2. Start minikube:
    ```bash
    $ minikube start --memory=4096 --cpus=4 --vm-driver=virtualbox
+   $ minikube addons enable ingress
    ```
 
 3. Add `/etc/hosts` entry:
