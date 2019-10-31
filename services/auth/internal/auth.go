@@ -321,6 +321,7 @@ func (a *AuthAPI) Verify(ctx echo.Context) error {
 		return sendAuthAPIError(ctx, http.StatusBadRequest, "Token has expired")
 	}
 
+	// Set account as verified and delete all tokens
 	account.VerifyEmail(a.dbHandler)
 	return ctx.JSON(http.StatusOK, map[string]int{})
 }

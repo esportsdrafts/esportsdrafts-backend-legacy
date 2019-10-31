@@ -15,7 +15,7 @@ from os.path import isfile, join
 from typing import List, Optional, Text, Tuple
 from urllib.parse import parse_qs, urlparse
 
-URL_REGEX = r'https:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])?'  # noqa
+URL_REGEX = r'https:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^;=%&:\/~+#-]*[\w@?^;=%&\/~+#-])?'  # noqa
 
 LOCAL_INBOX_PATH_OSX = '/Users/inbox'
 
@@ -111,7 +111,8 @@ def get_verification_token(welcome_email: Text) -> Tuple[Optional[Text],
 
     for match in matches:
         full_match = match.group(0)
-        if '/confirm' in full_match:
+        # This is dumb
+        if 'token' in full_match and 'user' in full_match:
             parsed = urlparse(full_match)
             query = parse_qs(parsed.query)
             token = query['token'][0]

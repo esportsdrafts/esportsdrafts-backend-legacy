@@ -118,8 +118,14 @@ def create_new_account(
     return User(username, email, password, url)
 
 
-def verify_email():
-    pass
+def verify_email(user: User, token: Text) -> None:
+    payload = {
+        'username': user.username,
+        'token': token,
+    }
+    res = requests.post(user.url + '/v1/auth/verifyemail',
+                        json=payload, verify=False)
+    raise_on_error(res)
 
 
 def reset_password():
