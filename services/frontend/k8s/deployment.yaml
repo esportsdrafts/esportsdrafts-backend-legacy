@@ -5,17 +5,20 @@ metadata:
   namespace: default
   labels:
     service: frontend
+    app: frontend
     app.kubernetes.io/managed-by: tilt
 spec:
   selector:
     matchLabels:
       service: frontend
+      app: frontend
       app.kubernetes.io/managed-by: tilt
   replicas: 1
   template:
     metadata:
       labels:
         service: frontend
+        app: frontend
         app.kubernetes.io/managed-by: tilt
     spec:
       containers:

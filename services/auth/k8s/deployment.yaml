@@ -5,17 +5,20 @@ metadata:
   namespace: default
   labels:
     service: auth
+    app: auth
     app.kubernetes.io/managed-by: tilt
 spec:
   replicas: 1
   selector:
     matchLabels:
       service: auth
+      app: auth
       app.kubernetes.io/managed-by: tilt
   template:
     metadata:
       labels:
         service: auth
+        app: auth
         app.kubernetes.io/managed-by: tilt
     spec:
       containers:
