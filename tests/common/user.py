@@ -136,9 +136,22 @@ def check_username_available(username: Text, env: Text) -> bool:
     return res.status_code == 200
 
 
-def reset_password():
-    pass
+def reset_password_request(user: User):
+    payload = {
+        'username': user.username,
+        'email': user.email,
+    }
+    res = requests.post(user.url + '/v1/auth/passwordreset/request',
+                        json=payload, verify=False)
+    raise_on_error(res)
 
 
-def verify_password_reset():
-    pass
+def verify_password_reset(user: User, token: Text, new_password: Text):
+    payload = {
+        'username': user.username,
+        'token': token,
+        'password': new_password,
+    }
+    res = requests.post(user.url + '/v1/auth/passwordreset/verify',
+                        json=payload, verify=False)
+    raise_on_error(res)
