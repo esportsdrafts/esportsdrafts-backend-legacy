@@ -39,6 +39,7 @@ frontend:  ## Build frontend. Requires that the repo is cloned in parent directo
 	docker build -f ../esportsdrafts-frontend/Dockerfile -t $(PROJECT_NAME)-frontend:latest ../esportsdrafts-frontend
 
 watch:  ## Start up a local development environment that watches and redeploys changes automatically
+	@./scripts/update_minikube_settings.sh
 	tilt up --watch
 
 tests:  ## Run all unit tests and print coverage

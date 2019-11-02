@@ -9,6 +9,7 @@ TODO: Support getting email from cloud DB in GCP.
 
 import codecs
 import os.path
+import platform
 import re
 from os import listdir
 from os.path import isfile, join
@@ -18,6 +19,7 @@ from urllib.parse import parse_qs, urlparse
 URL_REGEX = r'https:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^;=%&:\/~+#-]*[\w@?^;=%&\/~+#-])?'  # noqa
 
 LOCAL_INBOX_PATH_OSX = '/Users/inbox'
+LOCAL_INBOX_PATH_LINUX = '/home/inbox'
 
 
 def get_local_inbox_path(platform: Text) -> Text:
@@ -33,17 +35,19 @@ def get_local_inbox_path(platform: Text) -> Text:
     """
     platform = platform.lower()
 
-    if platform == 'osx' or platform == 'mac':
+    if platform in ['osx', 'mac', 'darwin']:
         return LOCAL_INBOX_PATH_OSX
-    if platform == 'linux':
-        raise Exception('Linux local inbox not supported')
+    if platform.startswith('linux'):
+        return LOCAL_INBOX_PATH_LINUX
 
     raise Exception('Unknown platform')
 
 
 def __get_local_email_inbox() -> List[Text]:
-    email_paths = [f for f in listdir(LOCAL_INBOX_PATH_OSX)
-                   if isfile(join(LOCAL_INBOX_PATH_OSX, f))]
+    plat = platform.system().lower()
+    path = get_local_inbox_path(plat)
+    email_paths = [f for f in listdir(path)
+                   if isfile(join(path, f))]
     return sorted(email_paths)
 
 

@@ -159,12 +159,19 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}
 
+		var roles []string
+		if !account.IsEmailVerified() {
+			roles = append(roles, "email_verify")
+		} else {
+			roles = append(roles, "user")
+		}
+
 		// Create the JWT claims, which includes the username and expiry time
 		claims := &JWTClaims{
 			Username: account.Username,
 			UserID:   account.ID.String(),
 			// Would be something more useful depending on the user type
-			Roles: []string{"user"},
+			Roles: roles,
 		}
 
 		tokenString, expirationTime, err := GenerateAuthToken(claims, 60*time.Minute, a.jwtKey)
