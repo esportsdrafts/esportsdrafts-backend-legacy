@@ -21,14 +21,23 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
-func AuthWrapper(endpoint func()) {
-
+// JWTMiddleware will check if token/cookie has correct signature,
+// and if the allowed roles are in token
+func JWTMiddleware(allowedRoles []string, signingSecret []byte) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) (err error) {
+			return nil
+		}
+	}
 }
 
+// HasRequestedWithHeader checks if X-Requested-With header has value
+// XMLHttpRequest
 func HasRequestedWithHeader(ctx echo.Context) bool {
 	return ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest"
 }
 
+// GetAuthTokenFromHeader grabs JWT token from header entry
 func GetAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	headerContent := ctx.Request().Header.Get("Authorization")
 	headerContent = strings.TrimSpace(headerContent)
@@ -42,6 +51,7 @@ func GetAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	return "", fmt.Errorf("Auth header not found")
 }
 
+// WriteHeaderPayloadCookie header entries in JWT token to cookie
 func WriteHeaderPayloadCookie(ctx echo.Context, header string, expiry time.Duration) {
 	cookie := new(http.Cookie)
 	cookie.Name = "header.payload"
@@ -53,6 +63,7 @@ func WriteHeaderPayloadCookie(ctx echo.Context, header string, expiry time.Durat
 	ctx.SetCookie(cookie)
 }
 
+// WriteSignatureCookie writes the JWT signature to a secure cookie
 func WriteSignatureCookie(ctx echo.Context, signature string) {
 	cookie := new(http.Cookie)
 	cookie.Name = "signature"
