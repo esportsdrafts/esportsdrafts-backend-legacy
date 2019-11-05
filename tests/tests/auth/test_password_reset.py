@@ -20,7 +20,8 @@ def test_reset_password(user, env):
 
         while True:
             attempts += 1
-            attempts <= 3, 'No reset password email found with correct content'
+            assert attempts <= 3, \
+                'No reset password email found with correct content'
 
             emails = get_emails_from_local_inbox(
                 user.username, 'reset_password')
