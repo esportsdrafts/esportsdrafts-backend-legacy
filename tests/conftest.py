@@ -1,7 +1,11 @@
 
+import glob
+import os
+import platform as pl
 from typing import Text
 
 import pytest
+from tests.common.email import get_local_inbox_path
 from tests.common.user import User, create_new_account
 from tests.common.utils import gen_random_chars
 
@@ -62,3 +66,19 @@ def user(api_env_url: Text,
     )
     new_user.login()
     return new_user
+
+
+@pytest.fixture(scope='session')
+def platform():
+    return pl.system().lower()
+
+
+@pytest.fixture(scope='session', autouse=True)
+def cleanup(request, platform):
+    """Cleanup local emails after each test session."""
+    def remove_local_emails():
+        files = glob.glob(get_local_inbox_path(platform) + '/*')
+        for f in files:
+            os.remove(f)
+
+    request.addfinalizer(remove_local_emails)

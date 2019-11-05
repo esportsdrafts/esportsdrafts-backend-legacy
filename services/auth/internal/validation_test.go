@@ -77,3 +77,22 @@ func TestValidEmailString(t *testing.T) {
 		}
 	}
 }
+
+func TestProfanityFilter(t *testing.T) {
+	validator := GetDefaultValidator()
+	tables := []struct {
+		input   string
+		isValid bool
+	}{
+		{"fuck", false},
+		// This should eventually cause test error, but for now filter is very basic
+		{"dancegame_fuck", true},
+		{"titties", false},
+	}
+	for _, table := range tables {
+		res := validator.ValidateUsername(table.input)
+		if res != table.isValid {
+			t.Errorf("Validating Usernmae '%s' was incorrect, got %t, wanted %t", table.input, res, table.isValid)
+		}
+	}
+}
