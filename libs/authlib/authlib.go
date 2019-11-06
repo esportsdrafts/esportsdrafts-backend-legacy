@@ -21,11 +21,49 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
+// Structure comes from the offical JWT middleware in Echo
+type (
+	// JWTConfig defines the config for JWT middleware.
+	JWTConfig struct {
+		// SuccessHandler defines a function which is executed for a valid token.
+		SuccessHandler JWTSuccessHandler
+
+		// ErrorHandler defines a function which is executed for an invalid token.
+		// It may be used to define a custom JWT error.
+		ErrorHandler JWTErrorHandler
+
+		// ErrorHandlerWithContext is almost identical to ErrorHandler, but it's passed the current context.
+		ErrorHandlerWithContext JWTErrorHandlerWithContext
+
+		// Signing key to validate token. Used as fallback if SigningKeys has length 0.
+		// Required. This or SigningKeys.
+		SigningKey interface{}
+	}
+
+	// JWTSuccessHandler defines a function which is executed for a valid token.
+	JWTSuccessHandler func(echo.Context)
+
+	// JWTErrorHandler defines a function which is executed for an invalid token.
+	JWTErrorHandler func(error) error
+
+	// JWTErrorHandlerWithContext is almost identical to JWTErrorHandler, but it's passed the current context.
+	JWTErrorHandlerWithContext func(error, echo.Context) error
+)
+
+var (
+	// ErrJWTMissing JWT Error
+	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "JWT token is missing or malformed")
+)
+
 // JWTMiddleware will check if token/cookie has correct signature,
 // and if the allowed roles are in token
-func JWTMiddleware(allowedRoles []string, signingSecret []byte) echo.MiddlewareFunc {
+func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
+	if config.SigningKey == nil || config.SigningKey == "" {
+		panic("JWT auth middleware requires signing secret")
+	}
+
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) (err error) {
+		return func(c echo.Context) error {
 			return nil
 		}
 	}
@@ -41,12 +79,13 @@ func HasRequestedWithHeader(ctx echo.Context) bool {
 func GetAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	headerContent := ctx.Request().Header.Get("Authorization")
 	headerContent = strings.TrimSpace(headerContent)
-	if strings.HasPrefix(headerContent, "Bearer") {
+	prefix := "Bearer"
+	if strings.HasPrefix(headerContent, prefix) {
 		runes := []rune(headerContent)
-		if len(runes) <= 7 {
+		if len(runes) <= len(prefix) {
 			return "", fmt.Errorf("Auth header not found")
 		}
-		return strings.TrimSpace(string(runes[6:])), nil
+		return strings.TrimSpace(string(runes[len(prefix):])), nil
 	}
 	return "", fmt.Errorf("Auth header not found")
 }
@@ -75,6 +114,29 @@ func WriteSignatureCookie(ctx echo.Context, signature string) {
 	// Block JS from reading this cookie
 	cookie.HttpOnly = true
 	ctx.SetCookie(cookie)
+}
+
+// ReadAuthCookies get both header and signature from cookies
+func readAuthCookies(ctx echo.Context) (string, error) {
+	headerCookie, err := ctx.Cookie("header.payload")
+	if err != nil {
+		return "", err
+	}
+
+	signatureCookie, err := ctx.Cookie("signature")
+	if err != nil {
+		return "", err
+	}
+	return reconstructAuthToken(headerCookie.Value, signatureCookie.Value), nil
+}
+
+// ReconstructAuthToken join header and signature cookie values
+func reconstructAuthToken(header, signature string) string {
+	return header + "." + signature
+}
+
+func refreshToken() error {
+	return nil
 }
 
 // GenerateAuthToken generates a auth token with provided claims
