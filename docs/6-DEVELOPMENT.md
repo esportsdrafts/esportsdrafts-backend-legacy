@@ -64,8 +64,8 @@ To check the status of the cluster run:
 ```bash
 $ minikube status
 host: Stopped
-kubelet: Stopped
-apiserver: Stopped
+kubelet:
+apiserver:
 kubeconfig:
 ```
 
