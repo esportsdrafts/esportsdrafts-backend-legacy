@@ -28,16 +28,12 @@ type (
 		// SuccessHandler defines a function which is executed for a valid token.
 		SuccessHandler JWTSuccessHandler
 
-		// ErrorHandler defines a function which is executed for an invalid token.
-		// It may be used to define a custom JWT error.
-		ErrorHandler JWTErrorHandler
-
 		// ErrorHandlerWithContext is almost identical to ErrorHandler, but it's passed the current context.
-		ErrorHandlerWithContext JWTErrorHandlerWithContext
+		ErrorHandlerWithContext JWTErrorHandler
 
 		// Signing key to validate token. Used as fallback if SigningKeys has length 0.
 		// Required. This or SigningKeys.
-		SigningKey interface{}
+		SigningKey byte[]
 	}
 
 	// JWTSuccessHandler defines a function which is executed for a valid token.
@@ -45,9 +41,6 @@ type (
 
 	// JWTErrorHandler defines a function which is executed for an invalid token.
 	JWTErrorHandler func(error) error
-
-	// JWTErrorHandlerWithContext is almost identical to JWTErrorHandler, but it's passed the current context.
-	JWTErrorHandlerWithContext func(error, echo.Context) error
 )
 
 var (
@@ -63,8 +56,47 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			return nil
+		return func(ctx echo.Context) error {
+
+			// Try and grab token from cookies since this is
+			// probably a browser
+			var raw_token string
+			if HasRequestedWithHeader(ctx) {
+				raw_token, err := readAuthCookies(ctx)
+				if err != nil {
+					return &echo.HTTPError{
+						Code: http.StatusUnauthorized,
+						Message: "Missing or invalid JWT in request"
+						Internal: err,
+					}
+				}
+			} else {
+				raw_token, err := GetAuthTokenFromHeader(ctx)
+				if err != nil {
+					return &echo.HTTPError{
+						Code: http.StatusUnauthorized,
+						Message: "Missing or invalid JWT in request"
+						Internal: err,
+					}
+				}
+			}
+
+			token := new(jwt.Token)
+			t := reflect.ValueOf(JWTClaims).Type().Elem()
+			claims := reflect.New(t).Interface().(JWTClaims)
+			token, err = jwt.ParseWithClaims(raw_token, claims, config.SigningKey)
+
+			if err == nil && token.Valid {
+				// Store user information from token into context.
+				c.Set(config.ContextKey, token)
+				return next(c)
+			}
+
+			return &echo.HTTPError{
+				Code: http.StatusUnauthorized,
+				Message: "Invalid or expired JWT in request"
+				Internal: err,
+			}
 		}
 	}
 }
