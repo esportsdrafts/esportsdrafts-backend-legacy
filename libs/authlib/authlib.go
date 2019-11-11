@@ -25,22 +25,12 @@ type JWTClaims struct {
 type (
 	// JWTConfig defines the config for JWT middleware.
 	JWTConfig struct {
-		// SuccessHandler defines a function which is executed for a valid token.
-		SuccessHandler JWTSuccessHandler
-
-		// ErrorHandlerWithContext is almost identical to ErrorHandler, but it's passed the current context.
-		ErrorHandlerWithContext JWTErrorHandler
-
 		// Signing key to validate token. Used as fallback if SigningKeys has length 0.
 		// Required. This or SigningKeys.
-		SigningKey byte[]
+		SigningKey []byte
+
+		AllowedRole string
 	}
-
-	// JWTSuccessHandler defines a function which is executed for a valid token.
-	JWTSuccessHandler func(echo.Context)
-
-	// JWTErrorHandler defines a function which is executed for an invalid token.
-	JWTErrorHandler func(error) error
 )
 
 var (
@@ -51,54 +41,84 @@ var (
 // JWTMiddleware will check if token/cookie has correct signature,
 // and if the allowed roles are in token
 func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
-	if config.SigningKey == nil || config.SigningKey == "" {
+	if config.SigningKey == nil {
 		panic("JWT auth middleware requires signing secret")
+	}
+
+	if config.AllowedRole == "" {
+		config.AllowedRole = "user"
 	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
-
 			// Try and grab token from cookies since this is
 			// probably a browser
-			var raw_token string
+			var rawToken string
+			var err error
+
 			if HasRequestedWithHeader(ctx) {
-				raw_token, err := readAuthCookies(ctx)
+				rawToken, err = readAuthCookies(ctx)
 				if err != nil {
 					return &echo.HTTPError{
-						Code: http.StatusUnauthorized,
-						Message: "Missing or invalid JWT in request"
+						Code:     http.StatusUnauthorized,
+						Message:  "Missing or invalid JWT in request",
 						Internal: err,
 					}
 				}
 			} else {
-				raw_token, err := GetAuthTokenFromHeader(ctx)
+				rawToken, err = getAuthTokenFromHeader(ctx)
 				if err != nil {
 					return &echo.HTTPError{
-						Code: http.StatusUnauthorized,
-						Message: "Missing or invalid JWT in request"
+						Code:     http.StatusUnauthorized,
+						Message:  "Missing or invalid JWT in request",
 						Internal: err,
 					}
 				}
 			}
 
-			token := new(jwt.Token)
-			t := reflect.ValueOf(JWTClaims).Type().Elem()
-			claims := reflect.New(t).Interface().(JWTClaims)
-			token, err = jwt.ParseWithClaims(raw_token, claims, config.SigningKey)
+			token, err := jwt.ParseWithClaims(rawToken, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+				return config.SigningKey, nil
+			})
 
-			if err == nil && token.Valid {
+			claims, ok := token.Claims.(*JWTClaims)
+
+			if err != nil || !ok {
+				if err == jwt.ErrSignatureInvalid {
+					return &echo.HTTPError{
+						Code:     http.StatusUnauthorized,
+						Message:  "Invalid or expired JWT in request",
+						Internal: err,
+					}
+				}
+				return &echo.HTTPError{
+					Code:     http.StatusBadRequest,
+					Message:  "Invalid or expired JWT in request",
+					Internal: err,
+				}
+			}
+
+			if err == nil && token.Valid && contains(claims.Roles, config.AllowedRole) {
 				// Store user information from token into context.
-				c.Set(config.ContextKey, token)
-				return next(c)
+				ctx.Set("user", claims)
+				return next(ctx)
 			}
 
 			return &echo.HTTPError{
-				Code: http.StatusUnauthorized,
-				Message: "Invalid or expired JWT in request"
+				Code:     http.StatusUnauthorized,
+				Message:  "Invalid or expired JWT in request",
 				Internal: err,
 			}
 		}
 	}
+}
+
+func contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }
 
 // HasRequestedWithHeader checks if X-Requested-With header has value
@@ -107,8 +127,8 @@ func HasRequestedWithHeader(ctx echo.Context) bool {
 	return ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest"
 }
 
-// GetAuthTokenFromHeader grabs JWT token from header entry
-func GetAuthTokenFromHeader(ctx echo.Context) (string, error) {
+// getAuthTokenFromHeader grabs JWT token from header entry
+func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	headerContent := ctx.Request().Header.Get("Authorization")
 	headerContent = strings.TrimSpace(headerContent)
 	prefix := "Bearer"
@@ -148,7 +168,7 @@ func WriteSignatureCookie(ctx echo.Context, signature string) {
 	ctx.SetCookie(cookie)
 }
 
-// ReadAuthCookies get both header and signature from cookies
+// readAuthCookies get both header and signature from cookies
 func readAuthCookies(ctx echo.Context) (string, error) {
 	headerCookie, err := ctx.Cookie("header.payload")
 	if err != nil {
