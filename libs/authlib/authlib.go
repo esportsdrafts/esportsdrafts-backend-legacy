@@ -92,14 +92,15 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 				}
 				return &echo.HTTPError{
 					Code:     http.StatusBadRequest,
-					Message:  "Invalid or expired JWT in request",
+					Message:  "Invalid JWT in request",
 					Internal: err,
 				}
 			}
 
 			if err == nil && token.Valid && contains(claims.Roles, config.AllowedRole) {
 				// Store user information from token into context.
-				ctx.Set("user", claims)
+				ctx.Set("user_id", claims.UserID)
+				ctx.Set("user", claims.Username)
 				return next(ctx)
 			}
 
