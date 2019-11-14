@@ -4,7 +4,7 @@ default_registry('docker.pkg.github.com/barreyo/esportsdrafts')
 
 services_k8s_files = [
     # GENERAL/GLOBAL CONFIG
-    'certs/k8s-secrets.yaml',
+    'config/certs/k8s-secrets.yaml',
     'config/configmaps/dev.yaml',
     'config/secrets/dev-auth.yaml',
 
