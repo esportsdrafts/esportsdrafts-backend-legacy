@@ -132,7 +132,7 @@ func HasRequestedWithHeader(ctx echo.Context) bool {
 func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	headerContent := ctx.Request().Header.Get("Authorization")
 	headerContent = strings.TrimSpace(headerContent)
-	prefix := "Bearer"
+	prefix := "Bearer:"
 	if strings.HasPrefix(headerContent, prefix) {
 		runes := []rune(headerContent)
 		if len(runes) <= len(prefix) {
