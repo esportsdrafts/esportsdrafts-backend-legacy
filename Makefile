@@ -14,8 +14,8 @@ GIT_HASH  		 	 = $(shell git rev-parse --verify HEAD)
 BOLD 				:= $(shell tput bold)
 RESET 				:= $(shell tput sgr0)
 
-.PHONY: services $(SERVICES) docker-login docker-base frontend watch tests \
-	integration-tests version clean help
+.PHONY: services $(SERVICES) docker-login docker-base docker-test-image frontend \
+	watch tests integration-tests version clean help
 
 .DEFAULT_GOAL := help
 
@@ -33,6 +33,10 @@ docker-base:  ## Build the base image for all services
 	@echo "$(BOLD)** Building base image version ${VERSION_LONG}...$(RESET)"
 	docker build -f ./Dockerfile -t $(DOCKER_BASE_IMAGE):latest --build-arg VERSION=$(VERSION_LONG) .
 	docker tag $(DOCKER_BASE_IMAGE):latest $(DOCKER_BASE_IMAGE):$(VERSION_LONG)
+
+docker-test-image:  ## Build python-based docker image for integration testing
+	@echo "$(BOLD)** Building docker test image version ${VERSION_LONG}...$(RESET)"
+	docker build -f ./Dockerfile.testing -t $(PROJECT_NAME)-testing:latest --build-arg VERSION=$(VERSION_LONG) .
 
 frontend:  ## Build frontend. Requires that the repo is cloned in parent directory to this repo
 	@echo "$(BOLD)** Building frontend docker image...$(RESET)"
