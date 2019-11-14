@@ -1,7 +1,8 @@
 
 import time
 
-from tests.common.email import get_emails_from_local_inbox, read_local_email, get_verification_token
+from tests.common.email import (get_emails_from_local_inbox,
+                                get_verification_token, read_local_email)
 from tests.common.user import reset_password_request, verify_password_reset
 from tests.common.utils import gen_random_chars
 

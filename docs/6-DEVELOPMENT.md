@@ -98,9 +98,7 @@ have passed you will be able to merge it into master.
 
 The codebase uses `semantic-release` to auto-generate version numbers. Which
 means there has to be a way for the tool to understand the impact of a commit.
-Therefore, the
-[Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines) are used when writing your commit
-message.
+Therefore, the [Angular Commit Message Conventions](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines) are used when writing your commit message.
 
 Some tools are available to help you remember the conventions:
 * [commitizen](https://github.com/commitizen/cz-cli)

@@ -2,8 +2,9 @@
 import time
 
 import requests
+
 from tests.common.email import get_emails_from_local_inbox, read_local_email
-from tests.common.user import create_new_account, check_username_available
+from tests.common.user import check_username_available, create_new_account
 from tests.common.utils import gen_random_chars
 
 
