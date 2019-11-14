@@ -1,9 +1,11 @@
 """User class and functions to CRUD users."""
 
 import time
-from typing import List, Text  # noqa
+from typing import List, Optional, Text  # noqa
 
+import jwt
 import requests
+
 from tests.common.utils import raise_on_error
 
 
@@ -30,11 +32,13 @@ class User():
         self.email = email
         self.password = password
         self.url = url
+        self.roles = []  # type: List[Text]
+        self.user_id = None  # type: Optional[Text]
 
         if url.endswith('/'):
             self.url = url[:-1]
 
-        self.__auth_token = None
+        self.__auth_token = None  # type: Optional[Text]
         self.__user_roles = []  # type: List[Text]
 
     def login(self):
@@ -49,8 +53,13 @@ class User():
         raise_on_error(res)
 
         res_json = res.json()
-        self.__auth_token = res_json["access_token"]
-        self.__auth_expires_in = res_json["expires_in"]
+        self.__auth_token = res_json['access_token']
+        self.__auth_expires_in = res_json['expires_in']
+
+        # Grab claims without verifying validity
+        claims = jwt.decode(self.__auth_token, verify=False)
+        self.user_id = claims.get('user_id')
+        self.roles = claims.get('roles', [])
 
     def logout(self):
         """Clear authentication for the user."""
@@ -66,6 +75,7 @@ class User():
                 int(time.time()) > self.__auth_expires_in:
             self.__auth_token = None
             self.__auth_expires_in = None
+            self.roles = []
             return False
 
         res = requests.get(self.url + '/v1/user/me', verify=False)

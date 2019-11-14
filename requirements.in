@@ -1,4 +1,5 @@
 hypothesis
 kubernetes
+pyjwt
 pytest
 requests

@@ -18,7 +18,7 @@ var /* const */ h = hermes.Hermes{
 	Theme: new(hermes.Flat),
 	Product: hermes.Product{
 		// Appears in header & footer of e-mails
-		Name: "ESportsDrafts",
+		Name: "esportsdrafts",
 		Link: fmt.Sprintf("https://%s/", baseURL),
 		// Optional product logo
 		Logo:      "http://www.duchess-france.org/wp-content/uploads/2016/01/gopher.png",
