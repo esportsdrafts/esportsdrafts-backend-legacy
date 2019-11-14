@@ -99,8 +99,7 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 
 			if err == nil && token.Valid && contains(claims.Roles, config.AllowedRole) {
 				// Store user information from token into context.
-				ctx.Set("user_id", claims.UserID)
-				ctx.Set("user", claims.Username)
+				ctx.Set("user", claims)
 				return next(ctx)
 			}
 
@@ -135,9 +134,6 @@ func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	prefix := "Bearer:"
 	if strings.HasPrefix(headerContent, prefix) {
 		runes := []rune(headerContent)
-		if len(runes) <= len(prefix) {
-			return "", fmt.Errorf("Auth header not found")
-		}
 		return strings.TrimSpace(string(runes[len(prefix):])), nil
 	}
 	return "", fmt.Errorf("Auth header not found")

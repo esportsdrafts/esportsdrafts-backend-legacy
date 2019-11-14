@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/barreyo/esportsdrafts/libs/log"
 	"math"
 	"testing"
 	"time"
@@ -32,6 +33,12 @@ func TestDefaultParameters(t *testing.T) {
 	if defaults.keyLength < 32 {
 		t.Errorf("Insecure key length")
 	}
+}
+
+func TestGenNullPassword(t *testing.T) {
+	params := GetDefaultHashingParams()
+	hashedPassword, _ := GenerateFromPassword("Ewdf3UKB8BGB1gWjkwvCWf6FZ3ZcYi8YqHVEDTRFZaYjqNXeGrHQH476kuEs2FMdmgPmY9RNjDjfACeuh1pcIA66GGCZ8Xu0hGBldr3s87Yc4iuwJCncEVJy", params)
+	log.GetLogger().Infof("%s", hashedPassword)
 }
 
 // Argon2 hashing has to take a sufficient amount of time to not be

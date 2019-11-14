@@ -140,12 +140,14 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 	switch newAuthClaim.Claim {
 	case "username+password":
 		var account db.Account
+		alwaysFail := false
 
 		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
 		if err != nil {
 			logger.Info("Username not found")
-			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
+			account = db.NullAccount
+			alwaysFail = true
 		}
 
 		match, err := ComparePasswordAndHash(*newAuthClaim.Password, account.Password)
@@ -154,7 +156,7 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 		}
 
-		if !match {
+		if !match || alwaysFail {
 			logger.Info("Username and password did not match")
 			return sendAuthAPIError(ctx, http.StatusUnauthorized, "Invalid username or password")
 		}

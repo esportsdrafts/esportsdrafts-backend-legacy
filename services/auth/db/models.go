@@ -66,6 +66,11 @@ type MFACode struct {
 
 type mfaMethod string
 
+// NullAccount denotes a dummy user used to do perform password compare
+var /* const */ NullAccount = Account{
+	Password: "$argon2id$v=19$m=65536,t=3,p=2$DkjlxfkTZlrgGY8XyfFLjw$w+sqKlCc8ju5ZacLtmyAngicTDMZUAcAGIHzqQa9Wi0",
+}
+
 const (
 	email mfaMethod = "email"
 )
