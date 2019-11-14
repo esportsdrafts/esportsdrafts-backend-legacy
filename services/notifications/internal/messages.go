@@ -67,7 +67,7 @@ func RunReceiveLoop() {
 				}
 				continue
 			}
-			logger.Infof("Sending welcome email")
+			logger.Infof("Sending welcome email to user: %s", msg.Username)
 			err = SendWelcomeEmail(msg.Username, msg.Email, msg.VerificationCode)
 			if err != nil {
 				logger.Warnf("Failed to send welcome email. Error: %s", err)
@@ -89,7 +89,7 @@ func RunReceiveLoop() {
 				}
 				continue
 			}
-			logger.Infof("Sending reset password email")
+			logger.Infof("Sending reset password email to user '%s'", msg.Username)
 			err = SendResetPasswordEmail(msg.Username, msg.Email, msg.ResetCode)
 			if err != nil {
 				logger.Warnf("Failed to send password reset email. Error: %s", err)
@@ -109,7 +109,7 @@ func RunReceiveLoop() {
 			continue
 		}
 
-		logger.Infof("Finished job %d with type %s. Deleting from queue...", id, jobType)
+		logger.Infof("Finished job %d with type: %s. Deleting from queue...", id, jobType)
 		err = c.Delete(id)
 		if err != nil {
 			logger.Errorf("Failed to delete message %d. Error: \n%s", id, err)
