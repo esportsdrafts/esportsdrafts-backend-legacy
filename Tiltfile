@@ -43,7 +43,8 @@ services_k8s_files = [
 k8s_yaml(services_k8s_files)
 
 go_ignores = ['tests', 'certs', 'docs', 'Dockerfile.testing', 'README.md',
-              'requirements-dev.txt', 'requirements.in', 'requirements.txt']
+              'requirements-dev.txt', 'requirements.in', 'requirements.txt',
+              'config', 'scripts', 'Makefile']
 
 # Core services
 docker_build('esportsdrafts-mysql', 'services/mysql',
@@ -69,4 +70,10 @@ docker_build('esportsdrafts-notifications', 'services/notifications',
 
 # Frontend is an edge-case since it lives in a seperate repo
 docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend/',
-             dockerfile='../esportsdrafts-frontend/Dockerfile')
+             dockerfile='../esportsdrafts-frontend/Dockerfile',
+             live_update=[
+                # when package.json changes, we need to do a full build
+                fall_back_on(['package.json', 'package-lock.json']),
+                # Map the local source code into the container under /src
+                sync('../esportsdrafts-frontend', '/app'),
+             ])
