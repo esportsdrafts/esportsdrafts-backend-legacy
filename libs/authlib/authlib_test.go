@@ -1,7 +1,7 @@
 package authlib
 
 import (
-	"github.com/barreyo/esportsdrafts/libs/log"
+	"github.com/esportsdrafts/esportsdrafts/libs/log"
 	"net/http"
 	"net/http/httptest"
 	"testing"

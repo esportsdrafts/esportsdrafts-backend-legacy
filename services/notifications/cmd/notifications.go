@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	efanlog "github.com/barreyo/esportsdrafts/libs/log"
-	internal "github.com/barreyo/esportsdrafts/services/notifications/internal"
+	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
+	internal "github.com/esportsdrafts/esportsdrafts/services/notifications/internal"
 	"github.com/heptiolabs/healthcheck"
 )
 

@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/barreyo/esportsdrafts/libs/log"
+	"github.com/esportsdrafts/esportsdrafts/libs/log"
 	"math"
 	"testing"
 	"time"

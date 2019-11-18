@@ -1,6 +1,6 @@
 # -*- mode: Python -*-
 
-default_registry('docker.pkg.github.com/barreyo/esportsdrafts')
+default_registry('docker.pkg.github.com/esportsdrafts/esportsdrafts')
 
 services_k8s_files = [
     # GENERAL/GLOBAL CONFIG

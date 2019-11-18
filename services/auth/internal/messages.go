@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	beanstalkd_models "github.com/barreyo/esportsdrafts/libs/beanstalkd/models"
-	efanlog "github.com/barreyo/esportsdrafts/libs/log"
+	beanstalkd_models "github.com/esportsdrafts/esportsdrafts/libs/beanstalkd/models"
+	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
 	"github.com/beanstalkd/go-beanstalk"
 )
 

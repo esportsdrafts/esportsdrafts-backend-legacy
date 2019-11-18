@@ -1,5 +1,5 @@
 
-FROM docker.pkg.github.com/barreyo/esportsdrafts/esportsdrafts-python:11-13-2019
+FROM docker.pkg.github.com/esportsdrafts/esportsdrafts/esportsdrafts-python:11-13-2019
 
 ARG VERSION=unknown
 

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/Jeffail/gabs/v2"
-	"github.com/barreyo/esportsdrafts/libs/beanstalkd/models"
-	efanlog "github.com/barreyo/esportsdrafts/libs/log"
+	"github.com/esportsdrafts/esportsdrafts/libs/beanstalkd/models"
+	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
 	"github.com/beanstalkd/go-beanstalk"
 )
 
