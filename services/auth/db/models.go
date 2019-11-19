@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"database/sql/driver"
+
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )

@@ -3,10 +3,11 @@ package internal
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/esportsdrafts/esportsdrafts/libs/log"
 	"math"
 	"testing"
 	"time"
+
+	"github.com/esportsdrafts/esportsdrafts/libs/log"
 
 	"golang.org/x/crypto/argon2"
 )
@@ -174,6 +175,9 @@ func TestDecodeHashErrors(t *testing.T) {
 	}
 
 	salt, err := generateRandomBytes(p.saltLength)
+	if err != nil {
+		t.Errorf("Failed to generate bytes %+v", err)
+	}
 	b64Salt := base64.RawStdEncoding.EncodeToString(salt)
 	invalidB64Hash := fmt.Sprintf("$argon2id$v=%d$m=%d,t=%d,p=%d$%s$%s",
 		argon2.Version, p.memory, p.iterations, p.parallelism, b64Salt, "bogus")

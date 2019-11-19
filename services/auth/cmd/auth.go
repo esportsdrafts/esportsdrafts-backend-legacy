@@ -8,10 +8,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/deepmap/oapi-codegen/pkg/middleware"
 	beanstalkd "github.com/esportsdrafts/esportsdrafts/libs/beanstalkd"
 	auth "github.com/esportsdrafts/esportsdrafts/services/auth/api"
 	"github.com/esportsdrafts/esportsdrafts/services/auth/db"
-	"github.com/deepmap/oapi-codegen/pkg/middleware"
 
 	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
 	"github.com/esportsdrafts/esportsdrafts/services/auth/internal"

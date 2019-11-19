@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/Jeffail/gabs/v2"
+	"github.com/beanstalkd/go-beanstalk"
 	"github.com/esportsdrafts/esportsdrafts/libs/beanstalkd/models"
 	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
-	"github.com/beanstalkd/go-beanstalk"
 )
 
 // RcvTimeout denotes time to wait for messages in seconds
@@ -77,7 +77,6 @@ func RunReceiveLoop() {
 				}
 				continue
 			}
-			break
 		case "reset_password_email":
 			var msg models.ResetPasswordEmail
 			err = json.Unmarshal(body, &msg)
@@ -99,7 +98,6 @@ func RunReceiveLoop() {
 				}
 				continue
 			}
-			break
 		default:
 			logger.Infof("Burying job with id %d", id)
 			err = c.Bury(id, BuryPriority)

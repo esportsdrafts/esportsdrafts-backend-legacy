@@ -90,8 +90,5 @@ func validPasswordString(password string, min int, max int) bool {
 // validEmailString returns true if string contains @ and a punctuation,
 // more validation than that will most likely be wrong and piss off users.
 func validEmailString(email string) bool {
-	if len(emailRegex.FindStringIndex(email)) == 0 {
-		return false
-	}
-	return true
+	return len(emailRegex.FindStringIndex(email)) != 0
 }

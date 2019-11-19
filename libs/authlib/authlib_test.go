@@ -1,11 +1,12 @@
 package authlib
 
 import (
-	"github.com/esportsdrafts/esportsdrafts/libs/log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/esportsdrafts/esportsdrafts/libs/log"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
@@ -159,7 +160,7 @@ func TestNoRoleMatch(t *testing.T) {
 	makeReq(initialToken)
 }
 
-func testExpiredToken(t *testing.T) {
+func TestExpiredToken(t *testing.T) {
 	e := echo.New()
 	handler := func(c echo.Context) error {
 		return c.String(http.StatusOK, "test")
@@ -187,7 +188,7 @@ func testExpiredToken(t *testing.T) {
 	makeReq(expiredToken)
 }
 
-func testGetAuthTokenFromHeader(t *testing.T) {
+func TestGetAuthTokenFromHeader(t *testing.T) {
 	genContext := func(h string) echo.Context {
 		e := echo.New()
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -205,8 +206,8 @@ func testGetAuthTokenFromHeader(t *testing.T) {
 	}
 
 	_, err = getAuthTokenFromHeader(genContext("Bearer:"))
-	if err == nil {
-		t.Errorf("Token is malformed, should have returned error")
+	if err != nil {
+		t.Errorf("Token is just not supplied, should not error")
 	}
 
 	_, err = getAuthTokenFromHeader(genContext("not bearer"))
