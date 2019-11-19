@@ -129,7 +129,7 @@ func HasRequestedWithHeader(ctx echo.Context) bool {
 
 // getAuthTokenFromHeader grabs JWT token from header entry
 func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
-	headerContent := ctx.Request().Header.Get("Authorization")
+	headerContent := ctx.Request().Header.Get(echo.HeaderAuthorization)
 	headerContent = strings.TrimSpace(headerContent)
 	prefix := "Bearer:"
 	if strings.HasPrefix(headerContent, prefix) {

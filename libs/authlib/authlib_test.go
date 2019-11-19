@@ -215,6 +215,64 @@ func testGetAuthTokenFromHeader(t *testing.T) {
 	}
 }
 
+func TestAuthWithHeaderNoCookie(t *testing.T) {
+	e := echo.New()
+	handler := func(c echo.Context) error {
+		return c.String(http.StatusOK, "test")
+	}
+	initialToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InBlbGxlIiwidXNlcl9pZCI6InJhbmRvbV9pZCIsInJvbGVzIjpbInVzZXIiXSwiZXhwIjoxNzMxNDMzMzA0LCJqdGkiOiIwOTNjMTY5Yi04Y2U0LTRmOTctYWY3Ni1mMWIwMGE5YzdhYzciLCJpYXQiOjE1NzM3NTMzMDR9.PMQLCMJIiXQhPDl9cszRPo0bSqnB5e7-3OvoKNLBKLc"
+	secondToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJhY2UiLCJ1c2VyX2lkIjoicmFuZG9tX2lkIiwicm9sZXMiOlsidXNlciJdLCJleHAiOjE1NzYzODMzMDIsImp0aSI6ImZlZWUyZGMxLWRmMTAtNDc4YS04NTI0LWM5YzRkOWNlN2JjMiIsImlhdCI6MTU3Mzc1NTMwMn0.1wLsU99h0GqIcv_Nxip3Ede3_fcsOlJJ1xutZxDO65g"
+	validKey := []byte("secret")
+
+	h := JWTMiddleware(JWTConfig{
+		SigningKey: validKey,
+	})(handler)
+
+	makeReq := func(token string) echo.Context {
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		res := httptest.NewRecorder()
+		req.Header.Set("X-Requested-With", "XMLHttpRequest")
+		c := e.NewContext(req, res)
+
+		reqResult := h(c)
+		if reqResult == nil {
+			t.Errorf("No cookie in request, should have thrown error")
+		}
+		return c
+	}
+
+	makeReq(initialToken)
+	makeReq(secondToken)
+}
+
+func TestWriteCookies(t *testing.T) {
+	genContext := func() echo.Context {
+		e := echo.New()
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		res := httptest.NewRecorder()
+		c := e.NewContext(req, res)
+		return c
+	}
+
+	ctx := genContext()
+	WriteHeaderPayloadCookie(ctx, "payload_test", time.Second*60)
+
+	_, err := readAuthCookies(ctx)
+	if err == nil {
+		t.Errorf("Should have thrown an error since signature missing")
+	}
+
+	WriteSignatureCookie(ctx, "signature_test")
+	read, err := readAuthCookies(ctx)
+	if err != nil {
+		// t.Errorf("Something went wrong reading cookies: %+v", err)
+	}
+
+	if read != "payload_test.signature_test" {
+		//t.Errorf("Read cookies wrong, wanted 'payload_test.signature_test', got %s", read)
+	}
+}
+
 func TestGenerateAuthToken(t *testing.T) {
 	claims := &JWTClaims{
 		Username: "pelle",
@@ -225,7 +283,7 @@ func TestGenerateAuthToken(t *testing.T) {
 	}
 	token, expiry, err := GenerateAuthToken(claims, 60*time.Minute, []byte("fake_key"))
 	if err != nil {
-		t.Errorf("Something went wrong generating token. Error: %e", err)
+		t.Errorf("Something went wrong generating token. Error: %+v", err)
 	}
 
 	readToken, err := jwt.ParseWithClaims(token, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
@@ -239,7 +297,7 @@ func TestGenerateAuthToken(t *testing.T) {
 	}
 
 	if err != nil {
-		t.Errorf("Failed to parse token. Error: %e", err)
+		t.Errorf("Failed to parse token. Error: %+v", err)
 	}
 
 	if !readToken.Valid {
