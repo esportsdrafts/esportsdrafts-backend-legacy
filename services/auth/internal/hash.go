@@ -13,11 +13,11 @@ import (
 
 var (
 	// ErrInvalidHash is returned if a hashed string contains wrong metadata
-	ErrInvalidHash = errors.New("The encoded hash is not in the correct format")
+	ErrInvalidHash = errors.New("the encoded hash is not in the correct format")
 
 	// ErrIncompatibleVersion is returned if the metadata indicates that the
 	// argon hashing algorithm version is not the correct one.
-	ErrIncompatibleVersion = errors.New("Incompatible version of argon2")
+	ErrIncompatibleVersion = errors.New("incompatible version of argon2")
 )
 
 // Params holds hashing parameters for Argon2
@@ -64,12 +64,12 @@ func (d *Argon2HashDecoder) Decode(encoded string) (p *Params, salt, hash []byte
 
 // Generate always return error
 func (r *ErrorMockGenerator) Generate(n uint32) ([]byte, error) {
-	return nil, fmt.Errorf("Generator mocked error")
+	return nil, fmt.Errorf("generator mocked error")
 }
 
 // Decode always return error
 func (d *ErrorMockDecoder) Decode(encoded string) (p *Params, salt, hash []byte, err error) {
-	return nil, nil, nil, fmt.Errorf("Decode mocked error")
+	return nil, nil, nil, fmt.Errorf("decode mocked error")
 }
 
 // GetDefaultHashingParams returns sane defaults for the hashing.

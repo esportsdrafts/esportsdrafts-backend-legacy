@@ -6,11 +6,11 @@ import (
 	"strings"
 	"time"
 
-	beanstalkd_models "github.com/barreyo/esportsdrafts/libs/beanstalkd/models"
-	efanlog "github.com/barreyo/esportsdrafts/libs/log"
-	auth "github.com/barreyo/esportsdrafts/services/auth/api"
-	"github.com/barreyo/esportsdrafts/services/auth/db"
 	"github.com/dgrijalva/jwt-go"
+	beanstalkd_models "github.com/esportsdrafts/esportsdrafts/libs/beanstalkd/models"
+	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
+	auth "github.com/esportsdrafts/esportsdrafts/services/auth/api"
+	"github.com/esportsdrafts/esportsdrafts/services/auth/db"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 	uuid "github.com/satori/go.uuid"
@@ -77,11 +77,11 @@ func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
 	if strings.HasPrefix(headerContent, "Bearer") {
 		runes := []rune(headerContent)
 		if len(runes) <= 7 {
-			return "", fmt.Errorf("Auth header not found")
+			return "", fmt.Errorf("auth header not found")
 		}
 		return strings.TrimSpace(string(runes[6:])), nil
 	}
-	return "", fmt.Errorf("Auth header not found")
+	return "", fmt.Errorf("auth header not found")
 }
 
 func writeHeaderPayloadCookie(ctx echo.Context, header string, expiry time.Duration) {

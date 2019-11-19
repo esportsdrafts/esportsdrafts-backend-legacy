@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	beanstalkd_models "github.com/barreyo/esportsdrafts/libs/beanstalkd/models"
-	efanlog "github.com/barreyo/esportsdrafts/libs/log"
 	"github.com/beanstalkd/go-beanstalk"
+	beanstalkd_models "github.com/esportsdrafts/esportsdrafts/libs/beanstalkd/models"
+	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
 )
 
 // Priority 0 will be processed instantly(most urgent), higher number will be
@@ -23,8 +23,8 @@ const (
 func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, email string, verificationCode string) (uint64, error) {
 	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", client.Address, client.Port))
 	if err != nil {
-		efanlog.GetLogger().Errorf("Failed to schedule welcome email for user %s", username)
-		return 0, fmt.Errorf("Failed to schedule welcome email")
+		efanlog.GetLogger().Errorf("failed to schedule welcome email for user %s", username)
+		return 0, fmt.Errorf("failed to schedule welcome email")
 	}
 
 	efanlog.GetLogger().Infof("Scheduling welcome email to %s (%s) with code %s", username, email, verificationCode)
@@ -40,13 +40,13 @@ func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, ema
 
 	marshalled, err := json.Marshal(emailJob)
 	if err != nil {
-		efanlog.GetLogger().Errorf("Failed to marshal welcome email job")
-		return 0, fmt.Errorf("Failed to schedule welcome email")
+		efanlog.GetLogger().Errorf("failed to marshal welcome email job")
+		return 0, fmt.Errorf("failed to schedule welcome email")
 	}
 
 	id, err := c.Put(marshalled, welcomeEmailJobPriority, defaultJobDelay, defaultJobTTR)
 	if err != nil {
-		return 0, fmt.Errorf("Failed to schedule welcome email")
+		return 0, fmt.Errorf("failed to schedule welcome email")
 	}
 
 	return id, nil
@@ -56,8 +56,8 @@ func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, ema
 func SchedulePasswordResetEmail(client *beanstalkd_models.Client, username string, email string, resetCode string) (uint64, error) {
 	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", client.Address, client.Port))
 	if err != nil {
-		efanlog.GetLogger().Errorf("Failed to schedule password reset email for user %s", username)
-		return 0, fmt.Errorf("Failed to schedule password reset email")
+		efanlog.GetLogger().Errorf("failed to schedule password reset email for user %s", username)
+		return 0, fmt.Errorf("failed to schedule password reset email")
 	}
 
 	efanlog.GetLogger().Infof("Scheduling password reset email to %s (%s) with code %s", username, email, resetCode)
@@ -73,13 +73,13 @@ func SchedulePasswordResetEmail(client *beanstalkd_models.Client, username strin
 
 	marshalled, err := json.Marshal(emailJob)
 	if err != nil {
-		efanlog.GetLogger().Errorf("Failed to marshal reset password email job")
-		return 0, fmt.Errorf("Failed to schedule reset password email")
+		efanlog.GetLogger().Errorf("failed to marshal reset password email job")
+		return 0, fmt.Errorf("failed to schedule reset password email")
 	}
 
 	id, err := c.Put(marshalled, resetEmailJobPriority, defaultJobDelay, defaultJobTTR)
 	if err != nil {
-		return 0, fmt.Errorf("Failed to schedule reset password email")
+		return 0, fmt.Errorf("failed to schedule reset password email")
 	}
 
 	return id, nil

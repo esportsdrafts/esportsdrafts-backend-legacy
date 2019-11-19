@@ -5,15 +5,19 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
+
+	// References through str
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
 func createDatabase(hostname string, user string, password string, dbname string) {
 	connParams := fmt.Sprintf("%s:%s@tcp(%s:3306)/", user, password, hostname)
 	db, err := sql.Open("mysql", connParams)
+
 	if err != nil {
 		panic(err)
 	}
+
 	defer db.Close()
 
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + dbname)
@@ -28,9 +32,11 @@ func CreateDBHandler(hostname string, user string, password string, dbname strin
 	connParams := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		user, password, hostname, dbname)
 	db, err := gorm.Open("mysql", connParams)
+
 	if err != nil {
 		return nil, err
 	}
+
 	db.LogMode(true)
 	db = db.AutoMigrate(Account{}, EmailVerificationCode{}, PasswordResetToken{}, MFACode{}, MFAMethod{})
 	return db, nil

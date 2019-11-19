@@ -21,7 +21,7 @@ type JWTClaims struct {
 	jwt.StandardClaims
 }
 
-// Structure comes from the offical JWT middleware in Echo
+// Structure comes from the official JWT middleware in Echo
 type (
 	// JWTConfig defines the config for JWT middleware.
 	JWTConfig struct {
@@ -136,7 +136,7 @@ func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
 		runes := []rune(headerContent)
 		return strings.TrimSpace(string(runes[len(prefix):])), nil
 	}
-	return "", fmt.Errorf("Auth header not found")
+	return "", fmt.Errorf("auth header not found")
 }
 
 // WriteHeaderPayloadCookie header entries in JWT token to cookie
@@ -182,10 +182,6 @@ func readAuthCookies(ctx echo.Context) (string, error) {
 // ReconstructAuthToken join header and signature cookie values
 func reconstructAuthToken(header, signature string) string {
 	return header + "." + signature
-}
-
-func refreshToken() error {
-	return nil
 }
 
 // GenerateAuthToken generates a auth token with provided claims

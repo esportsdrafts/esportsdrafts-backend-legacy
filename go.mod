@@ -1,4 +1,4 @@
-module github.com/barreyo/esportsdrafts
+module github.com/esportsdrafts/esportsdrafts
 
 go 1.12
 

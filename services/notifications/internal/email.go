@@ -89,7 +89,7 @@ func SendResetPasswordEmail(username string, userEmail string, code string) erro
 		Body: hermes.Body{
 			Name: username,
 			Intros: []string{
-				"You have received this email because a password reset request for your esportsdrafts account was recieved.",
+				"You have received this email because a password reset request for your esportsdrafts account was received.",
 			},
 			Actions: []hermes.Action{
 				{
