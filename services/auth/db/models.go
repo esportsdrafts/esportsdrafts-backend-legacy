@@ -65,7 +65,8 @@ type MFACode struct {
 	ExpiresAt time.Time `gorm:"not null;" json:"expires_at"`
 }
 
-type mfaMethod string
+// MFAMethodOption denotes a type of MFA
+type MFAMethodOption string
 
 // NullAccount denotes a dummy user used to do perform password compare
 var /* const */ NullAccount = Account{
@@ -73,15 +74,17 @@ var /* const */ NullAccount = Account{
 }
 
 const (
-	email mfaMethod = "email"
+	emailMFA MFAMethodOption = "email"
 )
 
-func (p *mfaMethod) Scan(value interface{}) error {
-	*p = mfaMethod(value.([]byte))
+// Scan turns a value into a MFAMethodOption
+func (p *MFAMethodOption) Scan(value interface{}) error {
+	*p = MFAMethodOption(value.([]byte))
 	return nil
 }
 
-func (p mfaMethod) Value() (driver.Value, error) {
+// Value gives the value as string of a MFAMethodOption
+func (p MFAMethodOption) Value() (driver.Value, error) {
 	return string(p), nil
 }
 
@@ -91,10 +94,12 @@ type MFAMethod struct {
 	Type string `gorm:"type:ENUM('email');not null;" json:"type"`
 }
 
-func (a *Account) SetMFAMethod(db *gorm.DB, method string) error {
+// SetMFAMethod sets MFA method on an account
+func (a *Account) SetMFAMethod(db *gorm.DB, method MFAMethodOption) error {
 	return nil
 }
 
+// VerifyEmail marks and account as verified
 func (a *Account) VerifyEmail(db *gorm.DB) error {
 	timeNow := time.Now()
 	a.EmailVerifiedAt = &timeNow
@@ -107,6 +112,7 @@ func (a *Account) VerifyEmail(db *gorm.DB) error {
 	return nil
 }
 
+// IsEmailVerified returns true if an email has been verified for the account
 func (a *Account) IsEmailVerified() bool {
 	return a.EmailVerifiedAt != nil
 }
