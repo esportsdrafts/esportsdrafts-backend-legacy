@@ -97,7 +97,7 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 				}
 			}
 
-			if err == nil && token.Valid && contains(claims.Roles, config.AllowedRole) {
+			if token.Valid && contains(claims.Roles, config.AllowedRole) {
 				// Store user information from token into context.
 				ctx.Set("user", claims)
 				return next(ctx)
@@ -179,7 +179,7 @@ func readAuthCookies(ctx echo.Context) (string, error) {
 	return reconstructAuthToken(headerCookie.Value, signatureCookie.Value), nil
 }
 
-// ReconstructAuthToken join header and signature cookie values
+// reconstructAuthToken join header and signature cookie values
 func reconstructAuthToken(header, signature string) string {
 	return header + "." + signature
 }
