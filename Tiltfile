@@ -62,18 +62,12 @@ docker_build('esportsdrafts-base', './',
 
 docker_build('esportsdrafts-auth', 'services/auth',
              dockerfile='services/auth/Dockerfile',
-             ignore=go_ignores + ['services/notifications'])
+             ignore=go_ignores + ['services/notifications', 'services/frontend'])
 
 docker_build('esportsdrafts-notifications', 'services/notifications',
              dockerfile='services/notifications/Dockerfile',
-             ignore=go_ignores + ['services/auth'])
+             ignore=go_ignores + ['services/auth', 'services/frontend'])
 
-# Frontend is an edge-case since it lives in a seperate repo
+# Frontend is an edge-case since it lives in a separate repo
 docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend/',
-             dockerfile='../esportsdrafts-frontend/Dockerfile',
-             live_update=[
-                # when package.json changes, we need to do a full build
-                fall_back_on(['package.json', 'package-lock.json']),
-                # Map the local source code into the container under /src
-                sync('../esportsdrafts-frontend', '/app'),
-             ])
+             dockerfile='../esportsdrafts-frontend/Dockerfile')

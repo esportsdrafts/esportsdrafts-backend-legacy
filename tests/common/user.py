@@ -5,8 +5,9 @@ from typing import List, Optional, Text  # noqa
 
 import jwt
 import requests
-
 from tests.common.utils import raise_on_error
+
+requests.packages.urllib3.disable_warnings()
 
 
 class User():
@@ -49,7 +50,8 @@ class User():
             'claim': 'username+password',
         }
         res = requests.post(self.url + '/v1/auth/auth',
-                            json=payload, verify=False)
+                            json=payload,
+                            verify=not self.url.endswith('.localhost'))
         raise_on_error(res)
 
         res_json = res.json()
@@ -65,7 +67,8 @@ class User():
         """Clear authentication for the user."""
         payload = {}
         res = requests.post(self.url + '/v1/auth/auth',
-                            json=payload, verify=False)
+                            json=payload,
+                            verify=not self.url.endswith('.localhost'))
         raise_on_error(res)
 
     @property
@@ -78,7 +81,8 @@ class User():
             self.roles = []
             return False
 
-        res = requests.get(self.url + '/v1/user/me', verify=False)
+        res = requests.get(self.url + '/v1/user/me',
+                           verify=not self.url.endswith('.localhost'))
         raise_on_error(res)
 
         return True
@@ -122,7 +126,8 @@ def create_new_account(
         'password': password,
     }
 
-    res = requests.post(url + '/v1/auth/register', json=payload, verify=False)
+    res = requests.post(url + '/v1/auth/register', json=payload,
+                        verify=not url.endswith('.localhost'))
     raise_on_error(res)
 
     return User(username, email, password, url)
@@ -133,16 +138,16 @@ def verify_email(user: User, token: Text) -> None:
         'username': user.username,
         'token': token,
     }
-    res = requests.post(user.url + '/v1/auth/verifyemail',
-                        json=payload, verify=False)
+    res = requests.post(user.url + '/v1/auth/verifyemail', json=payload,
+                        verify=not user.url.endswith('.localhost'))
     raise_on_error(res)
 
 
 def check_username_available(username: Text, env: Text) -> bool:
     if username is None:
         return False
-    res = requests.get(
-        f'{env}/v1/auth/check?username={username}', verify=False)
+    res = requests.get(f'{env}/v1/auth/check?username={username}',
+                       verify=not env.endswith('.localhost'))
     return res.status_code == 200
 
 
@@ -151,8 +156,9 @@ def reset_password_request(user: User):
         'username': user.username,
         'email': user.email,
     }
-    res = requests.post(user.url + '/v1/auth/passwordreset/request',
-                        json=payload, verify=False)
+    res = requests.post(
+        user.url + '/v1/auth/passwordreset/request', json=payload,
+        verify=not user.url.endswith('.localhost'))
     raise_on_error(res)
 
 
@@ -162,6 +168,7 @@ def verify_password_reset(user: User, token: Text, new_password: Text):
         'token': token,
         'password': new_password,
     }
-    res = requests.post(user.url + '/v1/auth/passwordreset/verify',
-                        json=payload, verify=False)
+    res = requests.post(
+        user.url + '/v1/auth/passwordreset/verify', json=payload,
+        verify=not user.url.endswith('.localhost'))
     raise_on_error(res)
