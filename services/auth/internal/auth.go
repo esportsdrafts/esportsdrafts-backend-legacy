@@ -6,14 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	authlib "github.com/esportsdrafts/esportsdrafts/libs/authlib"
 	beanstalkd_models "github.com/esportsdrafts/esportsdrafts/libs/beanstalkd/models"
 	efanlog "github.com/esportsdrafts/esportsdrafts/libs/log"
 	auth "github.com/esportsdrafts/esportsdrafts/services/auth/api"
 	"github.com/esportsdrafts/esportsdrafts/services/auth/db"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
-	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -23,16 +22,6 @@ const (
 	maxPasswordLength   = 128
 	minPasswordLength   = 12
 )
-
-// JWTClaims holds esportsdrafts auth claims. Roles array denotes what the user
-// can do within the application. For example and 'admin' would have elevated
-// access compared to a 'user'.
-type JWTClaims struct {
-	Username string   `json:"username"`
-	UserID   string   `json:"user_id"`
-	Roles    []string `json:"roles"`
-	jwt.StandardClaims
-}
 
 // AuthAPI holds global handlers for the API like Databases.
 type AuthAPI struct {
@@ -64,66 +53,6 @@ func sendAuthAPIError(ctx echo.Context, code int, message string) error {
 	}
 	err := ctx.JSON(code, authError)
 	return err
-}
-
-// TODO: Move this into a shared auth lib
-func hasRequestedWithHeader(ctx echo.Context) bool {
-	return ctx.Request().Header.Get("X-Requested-With") == "XMLHttpRequest"
-}
-
-func getAuthTokenFromHeader(ctx echo.Context) (string, error) {
-	headerContent := ctx.Request().Header.Get("Authorization")
-	headerContent = strings.TrimSpace(headerContent)
-	if strings.HasPrefix(headerContent, "Bearer") {
-		runes := []rune(headerContent)
-		if len(runes) <= 7 {
-			return "", fmt.Errorf("auth header not found")
-		}
-		return strings.TrimSpace(string(runes[6:])), nil
-	}
-	return "", fmt.Errorf("auth header not found")
-}
-
-func writeHeaderPayloadCookie(ctx echo.Context, header string, expiry time.Duration) {
-	cookie := new(http.Cookie)
-	cookie.Name = "header.payload"
-	cookie.Value = header
-
-	// Protect from sending over HTTP
-	cookie.Secure = true
-	cookie.Expires = time.Now().Add(expiry)
-	ctx.SetCookie(cookie)
-}
-
-func writeSignatureCookie(ctx echo.Context, signature string) {
-	cookie := new(http.Cookie)
-	cookie.Name = "signature"
-	cookie.Value = signature
-
-	// Protect from sending over HTTP
-	cookie.Secure = true
-
-	// Block JS from reading this cookie
-	cookie.HttpOnly = true
-	ctx.SetCookie(cookie)
-}
-
-// GenerateAuthToken generates a auth token with provided claims
-func GenerateAuthToken(claims *JWTClaims, expiry time.Duration, jwtKey []byte) (string, time.Time, error) {
-	issuedTime := time.Now()
-	expirationTime := issuedTime.Add(expiry)
-	claims.StandardClaims = jwt.StandardClaims{
-		// In JWT, the expiry time is expressed as unix milliseconds
-		ExpiresAt: expirationTime.Unix(),
-		// Can be used to blacklist in the future. Needs to hold state
-		// in that case :/
-		Id:       uuid.NewV4().String(),
-		IssuedAt: issuedTime.Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	res, err := token.SignedString(jwtKey)
-	return res, expirationTime, err
 }
 
 // PerformAuth performs an authentication request the auth path is based on
@@ -169,40 +98,32 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 		}
 
 		// Create the JWT claims, which includes the username and expiry time
-		claims := &JWTClaims{
+		claims := &authlib.JWTClaims{
 			Username: account.Username,
 			UserID:   account.ID.String(),
 			// Would be something more useful depending on the user type
 			Roles: roles,
 		}
 
-		tokenString, expirationTime, err := GenerateAuthToken(claims, 60*time.Minute, a.jwtKey)
+		tokenString, expirationTime, err := authlib.GenerateAuthToken(claims, authlib.DefaultCookiePayloadTimeout, a.jwtKey)
 		if err != nil {
 			logger.Info(err)
 			// If there is an error in creating the JWT return an internal server error
 			return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
 		}
 
+		// Web client so set cookies
+		if authlib.HasRequestedWithHeader(ctx) {
+			err = authlib.SetAuthCookies(ctx, tokenString)
+			if err != nil {
+				return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+			}
+			return ctx.JSON(http.StatusOK, map[string]int{})
+		}
+
 		result := auth.JWT{}
 		result.AccessToken = tokenString
 		result.ExpiresIn = int(expirationTime.Unix())
-
-		// Web client so set cookies
-		if hasRequestedWithHeader(ctx) {
-			// This can be done more efficiently by knowing exact indices of dots
-			// Doing exact locations is more accurate and correct. A token should
-			// always be perfectly validated
-			parts := strings.Split(tokenString, ".")
-			if len(parts) != 3 {
-				return sendAuthAPIError(ctx, http.StatusInternalServerError, "Failed to generate auth token")
-			}
-			signature := parts[2]
-			headerPayload := strings.Join(parts[0:2], ".")
-			writeSignatureCookie(ctx, signature)
-
-			// TODO: Configure cookie timeout globally
-			writeHeaderPayloadCookie(ctx, headerPayload, 60*time.Minute)
-		}
 
 		// Otherwise just give token
 		return ctx.JSON(http.StatusOK, result)

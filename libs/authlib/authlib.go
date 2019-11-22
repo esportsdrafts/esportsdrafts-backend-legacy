@@ -33,6 +33,11 @@ type (
 	}
 )
 
+const (
+	// DefaultCookiePayloadTimeout denotes the payload cookie expiry
+	DefaultCookiePayloadTimeout = 60 * time.Minute
+)
+
 var (
 	// ErrJWTMissing JWT Error
 	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "JWT token is missing or malformed")
@@ -56,12 +61,14 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 			var rawToken string
 			var err error
 
-			if HasRequestedWithHeader(ctx) {
+			isBrowser := HasRequestedWithHeader(ctx)
+
+			if isBrowser {
 				rawToken, err = readAuthCookies(ctx)
 				if err != nil {
 					return &echo.HTTPError{
 						Code:     http.StatusUnauthorized,
-						Message:  "Missing or invalid JWT in request",
+						Message:  "missing or invalid JWT in request",
 						Internal: err,
 					}
 				}
@@ -70,7 +77,7 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 				if err != nil {
 					return &echo.HTTPError{
 						Code:     http.StatusUnauthorized,
-						Message:  "Missing or invalid JWT in request",
+						Message:  "missing or invalid JWT in request",
 						Internal: err,
 					}
 				}
@@ -86,13 +93,13 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 				if err == jwt.ErrSignatureInvalid {
 					return &echo.HTTPError{
 						Code:     http.StatusUnauthorized,
-						Message:  "Invalid or expired JWT in request",
+						Message:  "invalid or expired JWT in request",
 						Internal: err,
 					}
 				}
 				return &echo.HTTPError{
 					Code:     http.StatusBadRequest,
-					Message:  "Invalid JWT in request",
+					Message:  "invalid JWT in request",
 					Internal: err,
 				}
 			}
@@ -100,16 +107,51 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 			if token.Valid && contains(claims.Roles, config.AllowedRole) {
 				// Store user information from token into context.
 				ctx.Set("user", claims)
+
+				// Update the payload cookie with new expiry
+				if isBrowser {
+					tokenString, _, err := GenerateAuthToken(claims, DefaultCookiePayloadTimeout, config.SigningKey)
+					if err != nil {
+						// If there is an error in creating the JWT return an internal server error
+						return &echo.HTTPError{
+							Code:     http.StatusInternalServerError,
+							Message:  "failed to refresh jwt token",
+							Internal: err,
+						}
+					}
+
+					err = SetAuthCookies(ctx, tokenString)
+					if err != nil {
+						return &echo.HTTPError{
+							Code:     http.StatusInternalServerError,
+							Message:  "failed to generate new auth context",
+							Internal: err,
+						}
+					}
+				}
 				return next(ctx)
 			}
 
 			return &echo.HTTPError{
 				Code:     http.StatusUnauthorized,
-				Message:  "Invalid or expired JWT in request",
+				Message:  "invalid or expired JWT in request",
 				Internal: err,
 			}
 		}
 	}
+}
+
+// SetAuthCookies helps generate our two cookies and set them in the context
+func SetAuthCookies(ctx echo.Context, tokenString string) error {
+	parts := strings.Split(tokenString, ".")
+	if len(parts) != 3 {
+		return fmt.Errorf("failed to split token string")
+	}
+	signature := parts[2]
+	headerPayload := strings.Join(parts[0:2], ".")
+	WriteSignatureCookie(ctx, signature)
+	WriteHeaderPayloadCookie(ctx, headerPayload, DefaultCookiePayloadTimeout)
+	return nil
 }
 
 func contains(a []string, x string) bool {
