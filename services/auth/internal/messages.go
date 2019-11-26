@@ -17,11 +17,16 @@ const (
 	resetEmailJobPriority   = 1024 * 5
 	defaultJobTTR           = 30 * time.Second
 	defaultJobDelay         = 0
+	tubeName                = "email-notifications"
 )
 
 // ScheduleNewUserEmail schedules a welcome email with email verification
 func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, email string, verificationCode string) (uint64, error) {
 	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", client.Address, client.Port))
+	t := beanstalk.Tube{
+		Conn: c,
+		Name: tubeName,
+	}
 	if err != nil {
 		efanlog.GetLogger().Errorf("failed to schedule welcome email for user %s", username)
 		return 0, fmt.Errorf("failed to schedule welcome email")
@@ -44,7 +49,7 @@ func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, ema
 		return 0, fmt.Errorf("failed to schedule welcome email")
 	}
 
-	id, err := c.Put(marshalled, welcomeEmailJobPriority, defaultJobDelay, defaultJobTTR)
+	id, err := t.Put(marshalled, welcomeEmailJobPriority, defaultJobDelay, defaultJobTTR)
 	if err != nil {
 		return 0, fmt.Errorf("failed to schedule welcome email")
 	}
@@ -55,6 +60,10 @@ func ScheduleNewUserEmail(client *beanstalkd_models.Client, username string, ema
 // SchedulePasswordResetEmail schedules a password reset email
 func SchedulePasswordResetEmail(client *beanstalkd_models.Client, username string, email string, resetCode string) (uint64, error) {
 	c, err := beanstalk.Dial("tcp", fmt.Sprintf("%s:%s", client.Address, client.Port))
+	t := beanstalk.Tube{
+		Conn: c,
+		Name: tubeName,
+	}
 	if err != nil {
 		efanlog.GetLogger().Errorf("failed to schedule password reset email for user %s", username)
 		return 0, fmt.Errorf("failed to schedule password reset email")
@@ -77,7 +86,7 @@ func SchedulePasswordResetEmail(client *beanstalkd_models.Client, username strin
 		return 0, fmt.Errorf("failed to schedule reset password email")
 	}
 
-	id, err := c.Put(marshalled, resetEmailJobPriority, defaultJobDelay, defaultJobTTR)
+	id, err := t.Put(marshalled, resetEmailJobPriority, defaultJobDelay, defaultJobTTR)
 	if err != nil {
 		return 0, fmt.Errorf("failed to schedule reset password email")
 	}

@@ -16,19 +16,21 @@ const (
 	ReleasePriority = 1024 * 5
 	ReleaseDelay    = 10 * time.Second
 	BuryPriority    = 1024
+	TubeName        = "email-notifications"
 )
 
 func RunReceiveLoop() {
 	logger := efanlog.GetLogger()
 
 	c, err := beanstalk.Dial("tcp", "beanstalkd:11300")
+	tSet := beanstalk.NewTubeSet(c, TubeName)
 	if err != nil {
 		logger.Fatalf("Failed to connect to Beanstalkd, error: %s", err)
 		return
 	}
 
 	for {
-		id, body, err := c.Reserve(RcvTimeout * time.Second)
+		id, body, err := tSet.Reserve(RcvTimeout * time.Second)
 		if err != nil {
 			continue
 		}
