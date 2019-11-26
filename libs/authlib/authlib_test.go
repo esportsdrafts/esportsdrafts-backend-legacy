@@ -165,7 +165,7 @@ func TestExpiredToken(t *testing.T) {
 	handler := func(c echo.Context) error {
 		return c.String(http.StatusOK, "test")
 	}
-	expiredToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImludmFsaWQtdG9rZW4iLCJ1c2VyX2lkIjoicmFuZG9tX2lkIiwicm9sZXMiOlsidXNlciJdLCJleHAiOjE1NzM3NTUzMDMsImp0aSI6ImVjYjM3OWUzLTk1NGUtNGE4NC1hNzNjLWE2OWNkMGZhOTIyZiIsImlhdCI6MTU3Mzc1NTMwMn0.PXh5_3Z5dpPI5zpqNIgXpUm4uc6HIuZMt-wddx44cDs"
+	expiredToken := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImludmFsaWQtdG9rZW4iLCJ1c2VyX2lkIjoicmFuZG9tX2lkIiwicm9sZXMiOlsidXNlciJdLCJleHAiOjE1NzQ1NzExMjUsImp0aSI6ImZmMzJiNTcyLWE1NmItNDBmZi1hZjAxLTYwZWIwZTlkMGE2NCIsImlhdCI6MTU3NDU3MTEyNH0.NScjvt8iCs70vJyb7FdG7wvbt8FIRqK_WT9JeuOnupE"
 	validKey := []byte("secret")
 
 	h := JWTMiddleware(JWTConfig{
@@ -213,6 +213,22 @@ func TestGetAuthTokenFromHeader(t *testing.T) {
 	_, err = getAuthTokenFromHeader(genContext("not bearer"))
 	if err == nil {
 		t.Errorf("Token not set, should have returned error")
+	}
+}
+
+func TestSetAuthCookies(t *testing.T) {
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	res := httptest.NewRecorder()
+	c := e.NewContext(req, res)
+	err := SetAuthCookies(c, "malformed_string")
+	if err == nil {
+		t.Errorf("Malformed token string should have caused error")
+	}
+
+	err = SetAuthCookies(c, "header.payload.signature")
+	if err != nil {
+		t.Errorf("Threw and error on allowed token string")
 	}
 }
 
