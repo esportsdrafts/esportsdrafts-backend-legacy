@@ -23,6 +23,13 @@ After following the guide you should be able to just run `make watch`. Each
 service will be rebuilt and deployed to your local deployment automatically
 when a change is detected.
 
+1. Clone the frontend repo into the same folder you cloned this repo. I.e.
+   `../` from the root of this project.
+
+    ```bash
+    $ cd .. && git clone git@github.com:esportsdrafts/esportsdrafts-frontend.git
+    ```
+
 1. Set up 'email inbox' for local email testing. More details on shared
    folders for Minikube: `https://minikube.sigs.k8s.io/docs/tasks/mount/`.
 
@@ -60,6 +67,10 @@ when a change is detected.
 
    Which will launch Tilt and setup your local cluster. A browser window will
    open where you can view the state of the cluster and logs for each service.
+
+5. Verify everything is up and running by visiting `esportsdrafts.localhost`
+   (it might take a bit for it to come online, keep an eye on the Tilt logs) in
+   a browser and/or run integration tests `make integration-tests`.
 
 When you reboot your computer minikube could be disabled. You do not have to
 go through the whole setup to get it back up.

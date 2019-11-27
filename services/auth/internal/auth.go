@@ -74,7 +74,6 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
 		if err != nil {
-			logger.Info("Username not found")
 			account = db.NullAccount
 			alwaysFail = true
 		}
