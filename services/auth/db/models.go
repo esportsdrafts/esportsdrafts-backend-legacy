@@ -68,7 +68,8 @@ type MFACode struct {
 // MFAMethodOption denotes a type of MFA
 type MFAMethodOption string
 
-// NullAccount denotes a dummy user used to do perform password compare
+// NullAccount denotes a dummy user used to do perform password compare if user
+// is not found - make sure auth has consistent response time
 var /* const */ NullAccount = Account{
 	Password: "$argon2id$v=19$m=65536,t=3,p=2$DkjlxfkTZlrgGY8XyfFLjw$w+sqKlCc8ju5ZacLtmyAngicTDMZUAcAGIHzqQa9Wi0",
 }

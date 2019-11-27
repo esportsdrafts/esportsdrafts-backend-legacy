@@ -25,4 +25,4 @@ spec:
         - image: esportsdrafts-frontend
           name: frontend
           ports:
-            - containerPort: 8080
+            - containerPort: 443

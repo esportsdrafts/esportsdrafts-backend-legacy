@@ -24,7 +24,7 @@ spec:
           - path: "/"
             backend:
               serviceName: frontend
-              servicePort: 8080
+              servicePort: 443
     - host: api.esportsdrafts.localhost
       http:
         paths:
