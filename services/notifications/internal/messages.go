@@ -19,6 +19,8 @@ const (
 	TubeName        = "email-notifications"
 )
 
+// RunReceiveLoop runs indefinietly and processes messages on the
+// email-notifications tube
 func RunReceiveLoop() {
 	logger := efanlog.GetLogger()
 
