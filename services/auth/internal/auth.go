@@ -74,7 +74,6 @@ func (a *AuthAPI) PerformAuth(ctx echo.Context) error {
 		err := a.dbHandler.Where("username = ?", newAuthClaim.Username).First(&account).Error
 		// Verify username and password
 		if err != nil {
-			logger.Info("Username not found")
 			account = db.NullAccount
 			alwaysFail = true
 		}
@@ -161,60 +160,64 @@ func (a *AuthAPI) CreateAccount(ctx echo.Context) error {
 			"Invalid email format")
 	}
 
-	// TODO: These queries can be in the same transaction
-	var usernameCheck db.Account
-	// Check if username is in use
-	err = a.dbHandler.Where("username = ?", newUsername).First(&usernameCheck).Error
-	if err == nil {
-		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			fmt.Sprintf("Username '%s' already in use", newUsername))
-	}
+	err = db.DoInTransaction(func(tx *gorm.DB) error {
+		var usernameCheck db.Account
+		// Check if username is in use
+		err = a.dbHandler.Where("username = ?", newUsername).First(&usernameCheck).Error
+		if err == nil {
+			return fmt.Errorf("Username '%s' already in use", newUsername)
+		}
 
-	// Important to add new reference, otherwise the query will check
-	// if email + username match instead of only email
-	var emailCheck db.Account
-	// Check if email is in use
-	err = a.dbHandler.Where("email = ?", newEmail).First(&emailCheck).Error
-	if err == nil {
-		// Information leak, someone could spam and figure out which emails
-		// are registered in the system.
-		return sendAuthAPIError(ctx, http.StatusBadRequest,
-			fmt.Sprint("The provided email is already registered"))
-	}
+		// Important to add new reference, otherwise the query will check
+		// if email + username match instead of only email
+		var emailCheck db.Account
+		// Check if email is in use
+		err = a.dbHandler.Where("email = ?", newEmail).First(&emailCheck).Error
+		if err == nil {
+			// Information leak, someone could spam and figure out which emails
+			// are registered in the system.
+			return fmt.Errorf("The provided email is already registered")
+		}
 
-	// Grab plain-text password, salt+hash it then save to DB
-	hashingParams := GetDefaultHashingParams()
-	hashedPassword, err := GenerateFromPassword(newPassword, hashingParams)
+		// Grab plain-text password, salt+hash it then save to DB
+		hashingParams := GetDefaultHashingParams()
+		hashedPassword, err := GenerateFromPassword(newPassword, hashingParams)
+		if err != nil {
+			return fmt.Errorf("%s", defaultErrorMessage)
+		}
+
+		currentTime := time.Now()
+		// TODO: Encrypt all fields except UserID
+		dbAccount := &db.Account{
+			Username:        newUsername,
+			Email:           newEmail,
+			Password:        hashedPassword,
+			AcceptedTermsAt: &currentTime,
+		}
+
+		err = a.dbHandler.Save(&dbAccount).Error
+		if err != nil {
+			return fmt.Errorf("%s", defaultErrorMessage)
+		}
+
+		expirationTime := time.Now().Add(48 * time.Hour)
+		verifyCode := &db.EmailVerificationCode{
+			UserID:    dbAccount.ID,
+			ExpiresAt: expirationTime,
+		}
+
+		err = a.dbHandler.Save(&verifyCode).Error
+		if err != nil {
+			return fmt.Errorf("%s", defaultErrorMessage)
+		}
+		go ScheduleNewUserEmail(a.beanstalkHandler, dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
+
+		return nil
+	}, a.dbHandler)
+
 	if err != nil {
-		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
+		return sendAuthAPIError(ctx, http.StatusBadRequest, err.Error())
 	}
-
-	currentTime := time.Now()
-	// TODO: Encrypt all fields except UserID
-	dbAccount := &db.Account{
-		Username:        newUsername,
-		Email:           newEmail,
-		Password:        hashedPassword,
-		AcceptedTermsAt: &currentTime,
-	}
-
-	err = a.dbHandler.Save(&dbAccount).Error
-	if err != nil {
-		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
-	}
-
-	expirationTime := time.Now().Add(48 * time.Hour)
-	verifyCode := &db.EmailVerificationCode{
-		UserID:    dbAccount.ID,
-		ExpiresAt: expirationTime,
-	}
-
-	err = a.dbHandler.Save(&verifyCode).Error
-	if err != nil {
-		efanlog.GetLogger().Info("Failed to create email verification token")
-		return sendAuthAPIError(ctx, http.StatusInternalServerError, defaultErrorMessage)
-	}
-	go ScheduleNewUserEmail(a.beanstalkHandler, dbAccount.Username, dbAccount.Email, verifyCode.ID.String())
 
 	// Empty JSON body with success status
 	return ctx.JSON(http.StatusCreated, map[string]int{})

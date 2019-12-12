@@ -112,7 +112,6 @@ func JWTMiddleware(config JWTConfig) echo.MiddlewareFunc {
 				if isBrowser {
 					tokenString, _, err := GenerateAuthToken(claims, DefaultCookiePayloadTimeout, config.SigningKey)
 					if err != nil {
-						// If there is an error in creating the JWT return an internal server error
 						return &echo.HTTPError{
 							Code:     http.StatusInternalServerError,
 							Message:  "failed to refresh jwt token",

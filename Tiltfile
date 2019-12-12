@@ -69,5 +69,9 @@ docker_build('esportsdrafts-notifications', 'services/notifications',
              ignore=go_ignores + ['services/auth', 'services/frontend'])
 
 # Frontend is an edge-case since it lives in a separate repo
-docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend/',
-             dockerfile='../esportsdrafts-frontend/Dockerfile')
+docker_build('esportsdrafts-frontend', '../esportsdrafts-frontend',
+             dockerfile='../esportsdrafts-frontend/Dockerfile',
+             live_update=[
+                 fall_back_on(['package.json', 'package-lock.json']),
+                 sync('../esportsdrafts-frontend', '/app')
+             ])

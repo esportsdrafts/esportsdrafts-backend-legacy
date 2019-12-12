@@ -5,9 +5,9 @@ metadata:
   namespace: default
 spec:
   ports:
-    - port: 8080
+    - port: 443
       protocol: TCP
-      targetPort: 8080
+      targetPort: 443
   selector:
     app: frontend
   type: NodePort
